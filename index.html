@@ -240,6 +240,54 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 /* EDIT INLINE on card */
 .cust-edit-form{background:#fff;border:2px solid var(--blue);border-radius:10px;padding:16px;margin-bottom:2px}
 
+/* CHECKBOX SELECTION IN CART */
+.ci-select-group{margin-top:7px}
+.ci-select-label{font-size:10px;font-weight:700;color:var(--muted);margin-bottom:4px;letter-spacing:.3px}
+.ci-checkbox-list{display:flex;flex-wrap:wrap;gap:4px;max-height:130px;overflow-y:auto;padding:2px 0}
+.ci-chk-item{display:inline-flex;align-items:center;gap:4px;font-size:11px;background:#f8f9fb;border:1px solid var(--border);border-radius:5px;padding:3px 8px;cursor:pointer;transition:all .12s;user-select:none}
+.ci-chk-item:hover{background:#eef3ff;border-color:var(--blue)}
+.ci-chk-item.checked{background:#eef3ff;border-color:var(--blue);font-weight:600}
+.ci-chk-item input[type=checkbox]{accent-color:var(--blue);cursor:pointer}
+.model-no{font-size:10px;font-weight:700;color:var(--blue);background:#e8f0fe;padding:1px 5px;border-radius:4px}
+
+/* ADMIN BUTTON */
+.admin-btn{padding:5px 12px;border-radius:12px;border:1px solid #3a4d63;background:transparent;color:#8899aa;font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;margin-left:8px}
+.admin-btn:hover{border-color:var(--gold);color:var(--gold)}
+.admin-btn.on{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+
+/* ADMIN TAB */
+.admin-tab{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
+.admin-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.admin-search{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff}
+.admin-search:focus{border-color:var(--blue)}
+.admin-add-btn{padding:8px 16px;background:var(--green);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
+.admin-cat-block{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:12px;overflow:hidden}
+.admin-cat-header{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:#f8f9fb;border-bottom:1px solid var(--border)}
+.admin-cat-title{font-size:13px;font-weight:700;color:var(--navy)}
+.admin-prod-row{display:flex;align-items:center;padding:7px 14px;border-bottom:1px solid #f5f6f8;gap:8px}
+.admin-prod-row:last-child{border-bottom:none}
+.admin-prod-name{flex:1;font-size:12px;color:var(--text)}
+.admin-prod-price{font-size:11px;color:var(--muted);min-width:110px}
+.admin-prod-custom{font-size:10px;background:#e6f7ee;color:#1a8a4a;padding:1px 6px;border-radius:6px;font-weight:700}
+.ap-edit{padding:3px 10px;border-radius:5px;border:1px solid var(--border);background:#fff;font-size:11px;cursor:pointer}
+.ap-edit:hover{background:#eef3ff;border-color:var(--blue)}
+.ap-del{padding:3px 10px;border-radius:5px;border:1px solid var(--border);background:#fff;font-size:11px;color:var(--red);cursor:pointer}
+.ap-del:hover{background:#fde8e8;border-color:var(--red)}
+
+/* PRODUCT EDIT MODAL */
+.modal.wide{max-width:580px}
+.list-editor{border:1px solid var(--border);border-radius:7px;overflow:hidden;margin-top:4px;background:#fff}
+.le-item{display:flex;align-items:center;gap:6px;padding:6px 10px;border-bottom:1px solid #f0f2f5}
+.le-item:last-child{border-bottom:none}
+.le-item input{flex:1;padding:4px 7px;border:1px solid var(--border);border-radius:5px;font-size:12px}
+.le-item .no-input{width:90px;flex:none}
+.le-add-row{padding:6px 10px;background:#f8f9fb;display:flex;gap:6px}
+.le-add-row input{flex:1;padding:5px 8px;border:1px solid var(--border);border-radius:5px;font-size:12px}
+.le-add-btn{padding:5px 12px;background:var(--blue);color:#fff;border:none;border-radius:5px;font-size:12px;cursor:pointer;white-space:nowrap}
+.icon-del{background:none;border:none;color:#ccc;font-size:17px;cursor:pointer;line-height:1;padding:0 2px;flex-shrink:0}
+.icon-del:hover{color:var(--red)}
+.pw-change{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+
 @media print{
   .no-print{display:none!important}
   .proposal-inner{box-shadow:none;padding:20px}
@@ -257,10 +305,30 @@ const { useState, useMemo, useCallback, useEffect } = React;
 function loadCustomers() {
   try { return JSON.parse(localStorage.getItem('gc_customers') || '[]'); } catch { return []; }
 }
-function saveCustomers(list) {
-  localStorage.setItem('gc_customers', JSON.stringify(list));
-}
+function saveCustomers(list) { localStorage.setItem('gc_customers', JSON.stringify(list)); }
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// Product overrides & custom products
+function loadOverrides() {
+  try { return JSON.parse(localStorage.getItem('gc_prod_overrides') || '{}'); } catch { return {}; }
+}
+function saveOverrides(obj) { localStorage.setItem('gc_prod_overrides', JSON.stringify(obj)); }
+function loadCustomProds() {
+  try { return JSON.parse(localStorage.getItem('gc_prod_custom') || '[]'); } catch { return []; }
+}
+function saveCustomProds(arr) { localStorage.setItem('gc_prod_custom', JSON.stringify(arr)); }
+
+// Admin password (default: 1234)
+const ADMIN_PW_KEY = 'gc_admin_pw';
+function getAdminPw() { return localStorage.getItem(ADMIN_PW_KEY) || '1234'; }
+function setAdminPw(pw) { localStorage.setItem(ADMIN_PW_KEY, pw); }
+
+function buildAllProducts(overrides, customProds) {
+  const base = PRODUCTS
+    .filter(p => !overrides[p.id]?.hidden)
+    .map(p => overrides[p.id] ? {...p, ...overrides[p.id], id: p.id} : p);
+  return [...base, ...customProds];
+}
 
 // ===== PRODUCT DATA =====
 const PRODUCTS = [
@@ -579,9 +647,16 @@ function App() {
   const [showNewForm, setShowNewForm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
 
+  // Admin & product management
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showAdminLogin, setShowAdminLogin] = useState(false);
+  const [overrides, setOverrides] = useState(loadOverrides);
+  const [customProds, setCustomProds] = useState(loadCustomProds);
+
+  const allProducts = useMemo(() => buildAllProducts(overrides, customProds), [overrides, customProds]);
+
   const activeCustomer = customers.find(c => c.id === activeCustomerId) || null;
 
-  // Sync cart → active customer in localStorage
   useEffect(() => {
     if (!activeCustomerId) return;
     setCustomers(prev => {
@@ -597,17 +672,14 @@ function App() {
     setCustomers(prev => { const u = [...prev, c]; saveCustomers(u); return u; });
     setShowNewForm(false);
   }, []);
-
   const updateCustomer = useCallback((id, data) => {
     setCustomers(prev => { const u = prev.map(c => c.id===id ? {...c,...data} : c); saveCustomers(u); return u; });
   }, []);
-
   const deleteCustomer = useCallback((id) => {
     setCustomers(prev => { const u = prev.filter(c => c.id!==id); saveCustomers(u); return u; });
     if (activeCustomerId === id) { setActiveCustomerId(null); setCart([]); }
     setDeleteTarget(null);
   }, [activeCustomerId]);
-
   const selectCustomer = useCallback((cust) => {
     setActiveCustomerId(cust.id);
     setCart(cust.cart || []);
@@ -615,10 +687,42 @@ function App() {
     setTab('select');
   }, []);
 
+  // Admin product CRUD
+  const adminSaveProduct = useCallback((prod) => {
+    if (prod.id && prod.id.startsWith('cp_')) {
+      setCustomProds(prev => {
+        const exists = prev.find(p => p.id === prod.id);
+        const u = exists ? prev.map(p => p.id===prod.id ? prod : p) : [...prev, prod];
+        saveCustomProds(u); return u;
+      });
+    } else if (prod.id) {
+      setOverrides(prev => {
+        const u = {...prev, [prod.id]: prod};
+        saveOverrides(u); return u;
+      });
+    } else {
+      const np = {...prod, id:'cp_'+newId()};
+      setCustomProds(prev => { const u=[...prev,np]; saveCustomProds(u); return u; });
+    }
+  }, []);
+  const adminDeleteProduct = useCallback((id) => {
+    if (id.startsWith('cp_')) {
+      setCustomProds(prev => { const u=prev.filter(p=>p.id!==id); saveCustomProds(u); return u; });
+    } else {
+      setOverrides(prev => { const u={...prev,[id]:{...(prev[id]||{}),hidden:true}}; saveOverrides(u); return u; });
+    }
+  }, []);
+  const adminRestoreProduct = useCallback((id) => {
+    setOverrides(prev => {
+      const u = {...prev}; if(u[id]) { delete u[id].hidden; if(!Object.keys(u[id]).length) delete u[id]; }
+      saveOverrides(u); return u;
+    });
+  }, []);
+
   const cartIds = useMemo(() => new Set(cart.map(c=>c.product.id)), [cart]);
 
   const filtered = useMemo(() => {
-    return PRODUCTS.filter(p => {
+    return allProducts.filter(p => {
       if(activeCat !== 'all' && p.cat !== activeCat) return false;
       if(tagFilter !== 'all' && !p.tags.includes(tagFilter)) return false;
       if(search) {
@@ -627,7 +731,7 @@ function App() {
       }
       return true;
     });
-  }, [activeCat, tagFilter, search]);
+  }, [allProducts, activeCat, tagFilter, search]);
 
   const grouped = useMemo(() => {
     const g = {};
@@ -646,16 +750,15 @@ function App() {
       product,
       qty: defaultQty,
       unit: product.unit,
-      selectedColor: product.colors ? product.colors[0] : '',
+      selectedColors: [],
+      selectedModels: [],
       customPrice: null,
       note: '',
     }]);
   }, [cartIds]);
-
   const removeFromCart = useCallback((selId) => {
     setCart(prev => prev.filter(s => s.id !== selId));
   }, []);
-
   const updateSel = useCallback((selId, field, val) => {
     setCart(prev => prev.map(s => s.id === selId ? {...s, [field]: val} : s));
   }, []);
@@ -672,9 +775,9 @@ function App() {
 
   const catCounts = useMemo(() => {
     const c = {};
-    PRODUCTS.forEach(p => { c[p.cat] = (c[p.cat]||0) + 1; });
+    allProducts.forEach(p => { c[p.cat] = (c[p.cat]||0) + 1; });
     return c;
-  }, []);
+  }, [allProducts]);
 
   const custName = activeCustomer
     ? activeCustomer.name1 + (activeCustomer.name2 ? ` / ${activeCustomer.name2}` : '')
@@ -689,21 +792,30 @@ function App() {
           <button className={`tab-btn${tab==='customers'?' active':''}`} onClick={()=>setTab('customers')}>👥 お客様リスト</button>
           <button className={`tab-btn${tab==='select'?' active':''}`} onClick={()=>setTab('select')}>📋 商品選択</button>
           <button className={`tab-btn${tab==='proposal'?' active':''}`} onClick={()=>setTab('proposal')}>📄 仕様書・提案書</button>
+          {isAdmin && <button className={`tab-btn${tab==='admin'?' active':''}`} onClick={()=>setTab('admin')}>⚙️ 商品管理</button>}
         </div>
         <div className="header-customer">
           {activeCustomer ? (
             <>
               <span style={{fontSize:12,color:'#8899aa'}}>選択中：</span>
-              <span style={{fontSize:13,fontWeight:700,color:'#fff',maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{custName}</span>
+              <span style={{fontSize:13,fontWeight:700,color:'#fff',maxWidth:180,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{custName}</span>
               {activeCustomer.property && <span style={{fontSize:11,color:'var(--gold)',marginLeft:4}}>{activeCustomer.property}</span>}
-              <span style={{fontSize:11,color:'#8899aa',marginLeft:4}}>{activeCustomer.coordinator}</span>
             </>
           ) : (
             <span style={{fontSize:12,color:'#8899aa'}}>お客様が未選択です</span>
           )}
           <input type="date" className="header-select" value={customerDate} onChange={e=>setCustomerDate(e.target.value)} style={{marginLeft:8}}/>
+          {isAdmin
+            ? <button className="admin-btn on" onClick={()=>setIsAdmin(false)}>🔓 管理者モード解除</button>
+            : <button className="admin-btn" onClick={()=>setShowAdminLogin(true)}>🔑 管理者</button>
+          }
         </div>
       </header>
+
+      {/* ADMIN LOGIN MODAL */}
+      {showAdminLogin && (
+        <AdminLoginModal onLogin={(ok)=>{ setIsAdmin(ok); setShowAdminLogin(false); if(ok) setTab('admin'); }} onClose={()=>setShowAdminLogin(false)}/>
+      )}
 
       {/* DELETE CONFIRM MODAL */}
       {deleteTarget && (
@@ -725,20 +837,18 @@ function App() {
       )}
 
       {/* NEW CUSTOMER MODAL */}
-      {showNewForm && (
-        <CustomerFormModal onSave={createCustomer} onClose={()=>setShowNewForm(false)}/>
-      )}
+      {showNewForm && <CustomerFormModal onSave={createCustomer} onClose={()=>setShowNewForm(false)}/>}
 
       {/* CUSTOMER LIST TAB */}
       {tab === 'customers' && (
-        <CustomerListTab
-          customers={customers}
-          activeCustomerId={activeCustomerId}
-          onSelect={selectCustomer}
-          onUpdate={updateCustomer}
-          onDelete={setDeleteTarget}
-          onNew={()=>setShowNewForm(true)}
-        />
+        <CustomerListTab customers={customers} activeCustomerId={activeCustomerId}
+          onSelect={selectCustomer} onUpdate={updateCustomer} onDelete={setDeleteTarget} onNew={()=>setShowNewForm(true)}/>
+      )}
+
+      {/* ADMIN TAB */}
+      {tab === 'admin' && isAdmin && (
+        <AdminPanel allProducts={allProducts} categories={CATEGORIES} overrides={overrides}
+          onSave={adminSaveProduct} onDelete={adminDeleteProduct} onRestore={adminRestoreProduct}/>
       )}
 
       {/* SELECT TAB */}
@@ -748,16 +858,12 @@ function App() {
           <nav className="sidebar no-print">
             <div className="sidebar-group">
               <div className={`sidebar-item${activeCat==='all'?' active':''}`} onClick={()=>setActiveCat('all')}>
-                すべて表示 <span className="ct">{PRODUCTS.length}</span>
+                すべて表示 <span className="ct">{allProducts.length}</span>
               </div>
             </div>
             {CATEGORIES.filter(c=>c.group!=='all').map(c=>{
-              if(c.group==='header-facade') return (
-                <div key={c.id} className="sidebar-grouplabel facade">{c.name}</div>
-              );
-              if(c.group==='header-detail') return (
-                <div key={c.id} className="sidebar-grouplabel detail">{c.name}</div>
-              );
+              if(c.group==='header-facade') return (<div key={c.id} className="sidebar-grouplabel facade">{c.name}</div>);
+              if(c.group==='header-detail') return (<div key={c.id} className="sidebar-grouplabel detail">{c.name}</div>);
               return (
                 <div key={c.id} className={`sidebar-item${activeCat===c.id?' active':''}`} onClick={()=>setActiveCat(c.id)}>
                   {c.name} <span className="ct">{catCounts[c.id]||0}</span>
@@ -829,6 +935,285 @@ function App() {
             totals={totals}
           />
         </div>
+      )}
+    </div>
+  );
+}
+
+// ===== ADMIN COMPONENTS =====
+
+function AdminLoginModal({onLogin, onClose}) {
+  const [pw, setPw] = React.useState('');
+  const [err, setErr] = React.useState(false);
+  const submit = () => {
+    if(pw === getAdminPw()) { onLogin(true); }
+    else { setErr(true); setPw(''); }
+  };
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">🔑 管理者ログイン</div>
+        <div className="form-group">
+          <label className="form-label">パスワード</label>
+          <input className="form-input" type="password" value={pw}
+            onChange={e=>{setPw(e.target.value);setErr(false);}}
+            onKeyDown={e=>e.key==='Enter'&&submit()}
+            autoFocus placeholder="パスワードを入力"/>
+          {err && <div style={{color:'var(--red)',fontSize:11,marginTop:4}}>パスワードが正しくありません</div>}
+        </div>
+        <div className="modal-actions">
+          <button className="btn-secondary" onClick={onClose}>キャンセル</button>
+          <button className="btn-primary" onClick={submit}>ログイン</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProductEditModal({product, onSave, onClose}) {
+  const isNew = !product.id;
+  const [form, setForm] = React.useState({
+    id: product.id || '',
+    cat: product.cat || '',
+    catName: product.catName || '',
+    group: product.group || 'detail',
+    name: product.name || '',
+    maker: product.maker || '',
+    priceType: product.priceType || 'fixed',
+    price: (product.price !== null && product.price !== undefined) ? product.price : '',
+    unit: product.unit || '式',
+    priceText: product.priceText || '',
+    note: product.note || '',
+    colors: product.colors ? [...product.colors] : [],
+    models: product.models ? product.models.map(m => typeof m === 'string' ? {no:'',name:m} : {...m}) : [],
+  });
+  const [newColor, setNewColor] = React.useState('');
+  const [newModelNo, setNewModelNo] = React.useState('');
+  const [newModelName, setNewModelName] = React.useState('');
+  const [newPw, setNewPw] = React.useState('');
+  const [newPwConfirm, setNewPwConfirm] = React.useState('');
+  const [pwMsg, setPwMsg] = React.useState('');
+
+  const setF = (k,v) => setForm(f=>({...f,[k]:v}));
+  const addColor = () => { if(newColor.trim()) { setF('colors',[...form.colors,newColor.trim()]); setNewColor(''); } };
+  const removeColor = (i) => setF('colors', form.colors.filter((_,idx)=>idx!==i));
+  const addModel = () => {
+    if(newModelName.trim()) {
+      setF('models',[...form.models,{no:newModelNo.trim(),name:newModelName.trim()}]);
+      setNewModelNo(''); setNewModelName('');
+    }
+  };
+  const removeModel = (i) => setF('models', form.models.filter((_,idx)=>idx!==i));
+  const updateModelField = (i,k,v) => setF('models', form.models.map((m,idx)=>idx===i?{...m,[k]:v}:m));
+
+  const handleSave = () => {
+    if(!form.name.trim()) { alert('商品名を入力してください'); return; }
+    const prod = {
+      ...form,
+      price: form.price !== '' ? Number(form.price) : null,
+      colors: form.colors.length > 0 ? form.colors : undefined,
+      models: form.models.length > 0 ? form.models : undefined,
+      lines: product.lines || ['lacie','hours','lifeplus','life'],
+      tags: product.tags || ['op'],
+    };
+    if(!prod.id) delete prod.id;
+    onSave(prod);
+  };
+
+  const handlePwChange = () => {
+    if(!newPw) return;
+    if(newPw !== newPwConfirm) { setPwMsg('パスワードが一致しません'); return; }
+    if(newPw.length < 4) { setPwMsg('4文字以上で設定してください'); return; }
+    setAdminPw(newPw);
+    setNewPw(''); setNewPwConfirm('');
+    setPwMsg('パスワードを変更しました');
+    setTimeout(()=>setPwMsg(''),3000);
+  };
+
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal wide" onClick={e=>e.stopPropagation()} style={{maxHeight:'90vh',overflowY:'auto'}}>
+        <div className="modal-title">{isNew ? '＋ 新規商品追加' : '✏️ 商品編集'}</div>
+
+        <div className="form-row">
+          <div className="form-group" style={{flex:2}}>
+            <label className="form-label">商品名 *</label>
+            <input className="form-input" value={form.name} onChange={e=>setF('name',e.target.value)} placeholder="商品名"/>
+          </div>
+          <div className="form-group" style={{flex:1}}>
+            <label className="form-label">グループ</label>
+            <select className="form-input" value={form.group} onChange={e=>setF('group',e.target.value)}>
+              <option value="facade">FACADE</option>
+              <option value="detail">DETAIL</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group" style={{flex:2}}>
+            <label className="form-label">メーカー</label>
+            <input className="form-input" value={form.maker} onChange={e=>setF('maker',e.target.value)} placeholder="メーカー名"/>
+          </div>
+          <div className="form-group" style={{flex:2}}>
+            <label className="form-label">カテゴリ名</label>
+            <input className="form-input" value={form.catName} onChange={e=>setF('catName',e.target.value)} placeholder="カテゴリ名"/>
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group" style={{flex:1}}>
+            <label className="form-label">価格区分</label>
+            <select className="form-input" value={form.priceType} onChange={e=>setF('priceType',e.target.value)}>
+              <option value="fixed">固定（カ所/式）</option>
+              <option value="perUnit">面積系（㎡/m/坪）</option>
+              <option value="included">標準内</option>
+              <option value="estimate">見積もり</option>
+            </select>
+          </div>
+          <div className="form-group" style={{flex:1}}>
+            <label className="form-label">単価（円）</label>
+            <input className="form-input" type="number" value={form.price} onChange={e=>setF('price',e.target.value)} placeholder="例: 50000"/>
+          </div>
+          <div className="form-group" style={{flex:1}}>
+            <label className="form-label">単位</label>
+            <input className="form-input" value={form.unit} onChange={e=>setF('unit',e.target.value)} placeholder="例: 式, ㎡, カ所"/>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">表示価格テキスト</label>
+          <input className="form-input" value={form.priceText} onChange={e=>setF('priceText',e.target.value)} placeholder="例: ¥50,000/式"/>
+        </div>
+
+        <div className="form-group">
+          <label className="form-label">備考・注意事項</label>
+          <input className="form-input" value={form.note} onChange={e=>setF('note',e.target.value)} placeholder="備考"/>
+        </div>
+
+        {/* カラーバリエーション */}
+        <div className="form-group">
+          <label className="form-label">カラーバリエーション</label>
+          <div className="list-editor">
+            {form.colors.map((c,i) => (
+              <div key={i} className="le-item">
+                <input value={c} onChange={e=>{const a=[...form.colors];a[i]=e.target.value;setF('colors',a);}} placeholder="カラー名"/>
+                <button className="icon-del" onClick={()=>removeColor(i)}>×</button>
+              </div>
+            ))}
+            <div className="le-add-row">
+              <input value={newColor} onChange={e=>setNewColor(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addColor()} placeholder="カラーを追加..."/>
+              <button className="le-add-btn" onClick={addColor}>追加</button>
+            </div>
+          </div>
+        </div>
+
+        {/* 商品・品番 */}
+        <div className="form-group">
+          <label className="form-label">商品・品番（選択肢）</label>
+          <div className="list-editor">
+            {form.models.map((m,i) => (
+              <div key={i} className="le-item">
+                <input className="no-input" value={m.no} onChange={e=>updateModelField(i,'no',e.target.value)} placeholder="品番"/>
+                <input value={m.name} onChange={e=>updateModelField(i,'name',e.target.value)} placeholder="商品名"/>
+                <button className="icon-del" onClick={()=>removeModel(i)}>×</button>
+              </div>
+            ))}
+            <div className="le-add-row">
+              <input style={{maxWidth:90}} value={newModelNo} onChange={e=>setNewModelNo(e.target.value)} placeholder="品番"/>
+              <input value={newModelName} onChange={e=>setNewModelName(e.target.value)} onKeyDown={e=>e.key==='Enter'&&addModel()} placeholder="商品名を入力..."/>
+              <button className="le-add-btn" onClick={addModel}>追加</button>
+            </div>
+          </div>
+        </div>
+
+        {/* パスワード変更 */}
+        <div className="pw-change">
+          <div style={{fontWeight:700,marginBottom:8}}>🔒 管理者パスワード変更</div>
+          <div className="form-row" style={{alignItems:'flex-end',gap:8}}>
+            <div className="form-group" style={{flex:1,marginBottom:0}}>
+              <input className="form-input" type="password" value={newPw} onChange={e=>setNewPw(e.target.value)} placeholder="新しいパスワード"/>
+            </div>
+            <div className="form-group" style={{flex:1,marginBottom:0}}>
+              <input className="form-input" type="password" value={newPwConfirm} onChange={e=>setNewPwConfirm(e.target.value)} placeholder="確認用パスワード"/>
+            </div>
+            <button className="btn-secondary" onClick={handlePwChange} style={{height:36,flexShrink:0}}>変更</button>
+          </div>
+          {pwMsg && <div style={{fontSize:11,marginTop:4,color:pwMsg.includes('変更しました')?'var(--green)':'var(--red)'}}>{pwMsg}</div>}
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn-secondary" onClick={onClose}>キャンセル</button>
+          <button className="btn-primary" onClick={handleSave}>{isNew ? '追加する' : '保存する'}</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AdminPanel({allProducts, categories, overrides, onSave, onDelete, onRestore}) {
+  const [search, setSearch] = React.useState('');
+  const [editTarget, setEditTarget] = React.useState(null);
+
+  const grouped = React.useMemo(() => {
+    const g = {};
+    allProducts.forEach(p => {
+      if(search) {
+        const q = search.toLowerCase();
+        if(!p.name.toLowerCase().includes(q) && !p.catName.toLowerCase().includes(q) && !p.maker.toLowerCase().includes(q)) return;
+      }
+      if(!g[p.cat]) g[p.cat] = {catName:p.catName, group:p.group, items:[]};
+      g[p.cat].items.push(p);
+    });
+    return g;
+  }, [allProducts, search]);
+
+  const hiddenProds = React.useMemo(() => {
+    return PRODUCTS.filter(p => overrides[p.id]?.hidden);
+  }, [overrides]);
+
+  return (
+    <div className="admin-tab">
+      <div className="admin-toolbar">
+        <input className="admin-search" placeholder="商品名・カテゴリ・メーカーで検索..." value={search} onChange={e=>setSearch(e.target.value)}/>
+        <button className="admin-add-btn" onClick={()=>setEditTarget({})}>＋ 新規追加</button>
+      </div>
+
+      {hiddenProds.length > 0 && (
+        <div className="admin-cat-block" style={{borderColor:'var(--red)',background:'#fff8f8',marginBottom:12}}>
+          <div className="admin-cat-header" style={{background:'#fde8e8'}}>
+            <span className="admin-cat-title" style={{color:'var(--red)'}}>🚫 非表示中の商品 ({hiddenProds.length}件)</span>
+          </div>
+          {hiddenProds.map(p => (
+            <div key={p.id} className="admin-prod-row">
+              <span className="admin-prod-name" style={{color:'var(--muted)',textDecoration:'line-through'}}>{p.name}</span>
+              <span className="admin-prod-price">{p.priceText||'-'}</span>
+              <button className="ap-edit" style={{color:'var(--green)',borderColor:'var(--green)'}} onClick={()=>onRestore(p.id)}>復元</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {Object.entries(grouped).map(([cat, {catName, group, items}]) => (
+        <div key={cat} className="admin-cat-block">
+          <div className="admin-cat-header">
+            <span className="admin-cat-title">{catName}</span>
+            <span style={{fontSize:11,color:'var(--muted)'}}>{items.length}件</span>
+          </div>
+          {items.map(p => (
+            <div key={p.id} className="admin-prod-row">
+              <span className="admin-prod-name">{p.name}</span>
+              {p.id && p.id.startsWith('cp_') && <span className="admin-prod-custom">カスタム</span>}
+              {overrides[p.id] && p.id && !p.id.startsWith('cp_') && <span className="admin-prod-custom" style={{background:'#fff3e0',color:'#c77600'}}>編集済</span>}
+              <span className="admin-prod-price">{p.priceText||'-'}</span>
+              <button className="ap-edit" onClick={()=>setEditTarget(p)}>編集</button>
+              <button className="ap-del" onClick={()=>{ if(window.confirm(`「${p.name}」を削除しますか？`)) onDelete(p.id); }}>削除</button>
+            </div>
+          ))}
+        </div>
+      ))}
+
+      {editTarget && (
+        <ProductEditModal product={editTarget} onSave={(prod)=>{onSave(prod);setEditTarget(null);}} onClose={()=>setEditTarget(null)}/>
       )}
     </div>
   );
@@ -1062,9 +1447,45 @@ function CartItem({sel, onRemove, onUpdate}) {
       <div className="ci-maker">{p.maker}</div>
 
       {p.colors && p.colors.length > 0 && (
-        <select className="ci-color" style={{marginTop:4}} value={sel.selectedColor} onChange={e=>onUpdate(sel.id,'selectedColor',e.target.value)}>
-          {p.colors.map(c=><option key={c}>{c}</option>)}
-        </select>
+        <div className="ci-select-group">
+          <div className="ci-select-label">カラー選択</div>
+          <div className="ci-checkbox-list">
+            {p.colors.map(c => {
+              const checked = (sel.selectedColors||[]).includes(c);
+              return (
+                <label key={c} className={`ci-chk-item${checked?' checked':''}`}>
+                  <input type="checkbox" checked={checked} onChange={()=>{
+                    const cur = sel.selectedColors||[];
+                    onUpdate(sel.id,'selectedColors', checked ? cur.filter(x=>x!==c) : [...cur,c]);
+                  }}/>
+                  {c}
+                </label>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {p.models && p.models.length > 0 && (
+        <div className="ci-select-group">
+          <div className="ci-select-label">商品・品番選択</div>
+          <div className="ci-checkbox-list">
+            {p.models.map(m => {
+              const key = m.no ? `${m.no}:${m.name}` : m.name;
+              const checked = (sel.selectedModels||[]).includes(key);
+              return (
+                <label key={key} className={`ci-chk-item${checked?' checked':''}`}>
+                  <input type="checkbox" checked={checked} onChange={()=>{
+                    const cur = sel.selectedModels||[];
+                    onUpdate(sel.id,'selectedModels', checked ? cur.filter(x=>x!==key) : [...cur,key]);
+                  }}/>
+                  {m.no && <span className="model-no">{m.no}</span>}
+                  {m.name}
+                </label>
+              );
+            })}
+          </div>
+        </div>
       )}
 
       {/* 面積・長さ系（㎡ / m / 坪） */}
@@ -1273,7 +1694,18 @@ function ProposalRow({sel, no}) {
         <div className="td-sub">{p.catName}</div>
       </td>
       <td>{p.maker}</td>
-      <td>{sel.selectedColor || '-'}</td>
+      <td>
+        {((sel.selectedColors && sel.selectedColors.length > 0) || (sel.selectedModels && sel.selectedModels.length > 0)) ? (
+          <>
+            {sel.selectedColors && sel.selectedColors.length > 0 && (
+              <div>{sel.selectedColors.join('、')}</div>
+            )}
+            {sel.selectedModels && sel.selectedModels.length > 0 && (
+              <div style={{fontSize:11,color:'var(--muted)'}}>{sel.selectedModels.join('、')}</div>
+            )}
+          </>
+        ) : '-'}
+      </td>
       <td style={{textAlign:'right'}}>
         {sel.qty ? `${parseFloat(sel.qty).toLocaleString('ja-JP')} ${sel.unit||p.unit}` : '-'}
       </td>
