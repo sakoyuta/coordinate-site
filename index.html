@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G HOUSE コーディネートシステム</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#1a2332;--navy2:#243447;--gold:#c8a45c;--gold2:#e6c97a;
+  --bg:#f0f2f5;--white:#fff;--text:#2c3e50;--muted:#6c7a89;
+  --border:#dde1e7;--green:#27ae60;--orange:#e67e22;--red:#e74c3c;--blue:#3498db;
+  --sidebar:260px;--header:60px;--cart:320px;
+}
+html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif;font-size:13px;background:var(--bg);color:var(--text)}
+#root{height:100%}
+
+/* LAYOUT */
+.app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+.header{height:var(--header);background:var(--navy);color:#fff;display:flex;align-items:center;gap:16px;padding:0 20px;flex-shrink:0;box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.header-logo{font-size:18px;font-weight:700;letter-spacing:1px;white-space:nowrap}
+.header-logo span{color:var(--gold)}
+.header-tabs{display:flex;gap:4px;margin-left:16px}
+.tab-btn{padding:6px 18px;border-radius:20px;border:1px solid #3a4d63;background:transparent;color:#8899aa;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.tab-btn:hover{border-color:var(--gold);color:var(--gold)}
+.tab-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.header-customer{display:flex;gap:10px;align-items:center;margin-left:auto}
+.header-input{padding:5px 10px;border-radius:6px;border:1px solid #3a4d63;background:#243447;color:#fff;font-size:12px;width:160px}
+.header-input::placeholder{color:#556677}
+.header-select{padding:5px 8px;border-radius:6px;border:1px solid #3a4d63;background:#243447;color:#fff;font-size:12px;cursor:pointer}
+.header-line-filter{display:flex;gap:4px}
+.lf-btn{padding:4px 10px;border-radius:12px;border:1px solid #3a4d63;background:transparent;color:#8899aa;font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+.lf-btn.active{background:var(--gold);color:var(--navy);border-color:var(--gold)}
+.lf-btn:hover:not(.active){border-color:var(--gold);color:var(--gold)}
+
+.body{display:flex;flex:1;overflow:hidden}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar);background:var(--white);border-right:1px solid var(--border);overflow-y:auto;flex-shrink:0}
+.sidebar-group{padding:8px 0}
+.sidebar-grouplabel{padding:6px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sidebar-grouplabel::before{content:'';display:block;width:3px;height:12px;border-radius:2px;background:var(--blue)}
+.sidebar-grouplabel.detail::before{background:var(--gold)}
+.sidebar-item{display:flex;align-items:center;justify-content:space-between;padding:6px 14px 6px 20px;font-size:12px;color:var(--text);cursor:pointer;transition:all .12s;border-left:3px solid transparent}
+.sidebar-item:hover{background:#f5f7fa}
+.sidebar-item.active{background:#eef3ff;color:var(--blue);border-left-color:var(--blue);font-weight:600}
+.sidebar-item .ct{font-size:10px;background:#f0f2f5;color:var(--muted);padding:1px 6px;border-radius:8px}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.search-bar{padding:10px 16px;background:var(--white);border-bottom:1px solid var(--border);display:flex;gap:10px;align-items:center;flex-shrink:0}
+.search-input{flex:1;padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;transition:border .2s}
+.search-input:focus{border-color:var(--blue)}
+.filter-tags{display:flex;gap:6px}
+.ftag{padding:4px 10px;border-radius:12px;border:1px solid var(--border);background:transparent;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
+.ftag.active{background:var(--text);color:#fff;border-color:var(--text)}
+.ftag.std.active{background:var(--green);border-color:var(--green)}
+.ftag.op.active{background:var(--orange);border-color:var(--orange)}
+.ftag.hit.active{background:var(--red);border-color:var(--red)}
+
+.products{flex:1;overflow-y:auto;padding:12px}
+.cat-title{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:10px;padding:8px 12px;background:linear-gradient(to right,var(--navy),var(--navy2));color:#fff;border-radius:8px;display:flex;align-items:center;gap:8px}
+.cat-title .group-badge{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700}
+.cat-title .group-badge.facade{background:#e8f0fe;color:#1a73e8}
+.cat-title .group-badge.detail{background:rgba(200,164,92,.2);color:var(--gold2)}
+.product-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:20px}
+.product-card{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:12px;cursor:pointer;transition:all .2s;position:relative}
+.product-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08);border-color:#bbc3cf;transform:translateY(-1px)}
+.product-card.selected{border-color:var(--blue);background:#f0f5ff}
+.pc-name{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:2px}
+.pc-maker{font-size:11px;color:var(--muted)}
+.pc-tags{display:flex;gap:4px;flex-wrap:wrap;margin:6px 0}
+.tag{display:inline-block;padding:1px 7px;border-radius:10px;font-size:10px;font-weight:700}
+.tag.std{background:#e6f7ee;color:#1a8a4a}
+.tag.op{background:#fff3e0;color:#c77600}
+.tag.hit{background:#fde8e8;color:#c0392b}
+.pc-price{font-size:13px;font-weight:700;color:var(--navy);margin:6px 0}
+.pc-price .unit{font-size:11px;font-weight:400;color:var(--muted)}
+.pc-note{font-size:11px;color:var(--muted);border-left:2px solid var(--gold);padding-left:6px;margin-top:4px}
+.pc-lines{display:flex;gap:3px;flex-wrap:wrap;margin-top:6px}
+.pl{font-size:10px;padding:1px 6px;border-radius:6px;font-weight:600}
+.pl.lacie{background:#e8e0f0;color:#6c3fa0}
+.pl.hours{background:#e0ecf7;color:#2471a3}
+.pl.lifeplus{background:#e8f5e9;color:#2e7d32}
+.pl.life{background:#fce4ec;color:#c62828}
+.add-btn{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-weight:700;line-height:1}
+.add-btn:hover{background:#2980b9;transform:scale(1.1)}
+.add-btn.in-cart{background:var(--green)}
+
+/* CART PANEL */
+.cart{width:var(--cart);background:var(--white);border-left:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.cart-header{padding:12px 14px;background:var(--navy);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:space-between}
+.cart-header .cnt{background:var(--gold);color:var(--navy);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.cart-items{flex:1;overflow-y:auto;padding:8px}
+.cart-item{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:8px;margin-bottom:6px;position:relative}
+.ci-name{font-size:12px;font-weight:700;color:var(--navy);padding-right:20px}
+.ci-maker{font-size:10px;color:var(--muted)}
+.ci-controls{display:flex;align-items:center;gap:6px;margin-top:6px;flex-wrap:wrap}
+.ci-qty{display:flex;align-items:center;gap:4px}
+.qty-btn{width:22px;height:22px;border-radius:4px;border:1px solid var(--border);background:var(--white);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.qty-btn:hover{background:#f0f2f5}
+.qty-input{width:50px;text-align:center;padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:12px}
+.unit-select{padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:#fff;cursor:pointer}
+.ci-price-row{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+.ci-price-label{font-size:11px;color:var(--muted)}
+.ci-price-val{font-size:13px;font-weight:700;color:var(--navy)}
+.ci-note-input{width:100%;margin-top:4px;padding:3px 6px;border:1px solid var(--border);border-radius:4px;font-size:11px;color:var(--text)}
+.ci-custom-price{width:90px;padding:2px 6px;border:1px solid var(--border);border-radius:4px;font-size:12px;text-align:right}
+.ci-remove{position:absolute;top:6px;right:6px;background:none;border:none;color:#bbc3cf;font-size:16px;cursor:pointer;line-height:1;padding:0}
+.ci-remove:hover{color:var(--red)}
+.cart-footer{padding:12px 14px;border-top:2px solid var(--border);background:var(--bg)}
+.total-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0}
+.total-label{font-size:12px;color:var(--muted)}
+.total-val{font-size:12px;font-weight:600;color:var(--text)}
+.grand-total{font-size:16px;font-weight:700;color:var(--navy);border-top:1px solid var(--border);margin-top:6px;padding-top:6px}
+.grand-val{font-size:18px;color:var(--blue)}
+.proposal-btn{width:100%;margin-top:10px;padding:10px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s}
+.proposal-btn:hover{background:#243447}
+.clear-btn{width:100%;margin-top:6px;padding:7px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;font-size:12px;cursor:pointer;transition:all .2s}
+.clear-btn:hover{background:#fde8e8;color:var(--red);border-color:var(--red)}
+.empty-cart{text-align:center;padding:40px 14px;color:var(--muted)}
+.empty-cart .icon{font-size:40px;margin-bottom:10px;opacity:.4}
+
+/* COLOR SELECT */
+.ci-color{padding:2px 4px;border:1px solid var(--border);border-radius:4px;font-size:11px;background:#fff;cursor:pointer;max-width:120px}
+
+/* PROPOSAL TAB */
+.proposal{flex:1;overflow-y:auto;padding:20px;background:#f5f5f5;display:none}
+.proposal.active{display:block}
+.proposal-inner{max-width:800px;margin:0 auto;background:#fff;padding:40px;border-radius:8px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.prop-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:30px;padding-bottom:20px;border-bottom:3px solid var(--navy)}
+.prop-logo{font-size:24px;font-weight:700;letter-spacing:2px;color:var(--navy)}
+.prop-logo span{color:var(--gold)}
+.prop-meta{text-align:right;font-size:12px;color:var(--muted)}
+.prop-meta .doc-no{font-size:14px;font-weight:700;color:var(--navy)}
+.prop-customer{margin-bottom:24px;padding:16px;background:#f8f9fb;border-radius:8px;border-left:4px solid var(--gold)}
+.prop-customer h3{font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px}
+.prop-customer .name{font-size:18px;font-weight:700;color:var(--navy)}
+.prop-customer .sub{font-size:12px;color:var(--muted);margin-top:2px}
+.prop-section{margin-bottom:24px}
+.prop-section-title{font-size:13px;font-weight:700;color:#fff;background:var(--navy);padding:8px 14px;border-radius:6px;margin-bottom:0;display:flex;align-items:center;gap:8px}
+.prop-section-title .badge{font-size:10px;padding:1px 8px;border-radius:8px}
+.prop-section-title .badge.facade{background:#3498db;color:#fff}
+.prop-section-title .badge.detail{background:var(--gold);color:var(--navy)}
+.prop-table{width:100%;border-collapse:collapse;font-size:12px}
+.prop-table th{background:#f4f5f7;padding:8px 10px;text-align:left;border:1px solid #e0e3e8;font-weight:700;color:var(--muted);font-size:11px}
+.prop-table td{padding:8px 10px;border:1px solid #e0e3e8;vertical-align:top}
+.prop-table tr:nth-child(even) td{background:#fafbfc}
+.prop-table .td-name{font-weight:600;color:var(--navy)}
+.prop-table .td-price{text-align:right;font-weight:700;color:var(--navy);white-space:nowrap}
+.prop-table .td-sub{font-size:11px;color:var(--muted)}
+.prop-total{margin-top:20px;padding:16px;background:#f8f9fb;border-radius:8px;border:2px solid var(--navy)}
+.prop-total-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:13px}
+.prop-total-row.grand{font-size:16px;font-weight:700;color:var(--navy);border-top:2px solid var(--navy);margin-top:8px;padding-top:8px}
+.prop-footer{margin-top:30px;padding-top:16px;border-top:1px solid var(--border);font-size:11px;color:var(--muted);text-align:center}
+.prop-sign{margin-top:40px;display:flex;justify-content:space-between}
+.prop-sign-box{border-top:1px solid #999;width:180px;text-align:center;padding-top:4px;font-size:11px;color:var(--muted)}
+.print-btn{padding:8px 18px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:16px}
+.print-btn:hover{background:#243447}
+.no-items-msg{text-align:center;padding:60px;color:var(--muted)}
+@media print{
+  .no-print{display:none!important}
+  .proposal-inner{box-shadow:none;padding:20px}
+  body{background:#fff}
+  .proposal{background:#fff}
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useMemo, useCallback } = React;
+
+// ===== PRODUCT DATA =====
+const PRODUCTS = [
+  // ---- FACADE ----
+  // 外壁（サイディング）
+  {id:'f001',cat:'gaiheki',catName:'外壁（サイディング）',group:'facade',name:'標準サイディング（横張のみ）',maker:'各社メーカー',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'サイディングを2種類以上使用する場合は同じメーカーからご選択ください。'},
+  {id:'f002',cat:'gaiheki',catName:'外壁（サイディング）',group:'facade',name:'OP サイディング各種',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:4500,unit:'㎡',priceText:'¥4,500/㎡',note:'標準外カラー・デザインのサイディング'},
+  {id:'f003',cat:'gaiheki',catName:'外壁（サイディング）',group:'facade',name:'アルテミュール（木目調）',maker:'IG工業',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:4500,unit:'㎡',priceText:'¥4,500/㎡',colors:['レッドシダーナチュラルGC','レッドシダーエイジングGC','オークナチュラルGC','オークヴィンテージGC','ウォルナットナチュラルGC','ウォルナットダークGC']},
+  // 外壁（金属サイディング）
+  {id:'f011',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'SPビレクト（標準）',maker:'IG工業',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡',colors:['Fネオホワイト','Fモスグリーン','Fマットブラック'],note:'LACIE:全面標準、HOURS:アクセント面のみ標準'},
+  {id:'f012',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'SPビレクト（OP）',maker:'IG工業',tags:['op'],lines:['lacie','hours'],priceType:'perUnit',price:9500,unit:'㎡',priceText:'¥9,500/㎡',colors:['Fネオホワイト','Fモスグリーン','Fマットブラック']},
+  {id:'f013',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'ガルスパン（標準）',maker:'IG工業',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡',note:'LACIE:全面標準、HOURS:アクセント面のみ標準'},
+  {id:'f014',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'ガルスパン（OP）',maker:'IG工業',tags:['op'],lines:['lacie','hours'],priceType:'perUnit',price:9500,unit:'㎡',priceText:'¥9,500/㎡'},
+  // 外壁（塗り壁）
+  {id:'f021',cat:'gaiheki-nuri',catName:'外壁（塗り壁）',group:'facade',name:'エンシェントブリック（標準）',maker:'ジョリパットネオ∞ JQ-620',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:8000,unit:'㎡',priceText:'¥8,000/㎡'},
+  {id:'f022',cat:'gaiheki-nuri',catName:'外壁（塗り壁）',group:'facade',name:'エンシェントブリック（OP）',maker:'ジョリパットネオ∞ JQ-620',tags:['op'],lines:['lacie','hours'],priceType:'perUnit',price:12500,unit:'㎡',priceText:'¥12,500/㎡'},
+  {id:'f023',cat:'gaiheki-nuri',catName:'外壁（塗り壁）',group:'facade',name:'ミーティア（標準）',maker:'ジョリパットネオ∞ JQ-620',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:8000,unit:'㎡',priceText:'¥8,000/㎡',colors:['T4001','T5009','T3009','T3005','T3010','T3400','T1010','T6013','T3001','T5403','T4024','T4403']},
+  {id:'f024',cat:'gaiheki-nuri',catName:'外壁（塗り壁）',group:'facade',name:'ミーティア（OP）',maker:'ジョリパットネオ∞ JQ-620',tags:['op'],lines:['lacie','hours'],priceType:'perUnit',price:12500,unit:'㎡',priceText:'¥12,500/㎡',colors:['T4001','T5009','T3009','T3005','T3010','T3400','T1010','T6013','T3001','T5403','T4024','T4403']},
+  // 外壁（SOLIDO）
+  {id:'f031',cat:'gaiheki-solido',catName:'外壁（SOLIDO）',group:'facade',name:'SOLIDO（OP）',maker:'外壁材',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:21500,unit:'㎡',priceText:'¥21,500/㎡（5㎡以下¥110,000/式）',colors:['鉄黒','セメント','錆茶','灰']},
+  // ポーチ
+  {id:'f041',cat:'porch',catName:'ポーチ',group:'facade',name:'ネイチャーII',maker:'Nagoya mozaic',tags:['std','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'f042',cat:'porch',catName:'ポーチ',group:'facade',name:'ベスパ',maker:'LIXIL',tags:['std','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'f043',cat:'porch',catName:'ポーチ',group:'facade',name:'メンフィス（OP）',maker:'LIXIL',tags:['op','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:22000,unit:'㎡',priceText:'¥22,000/㎡'},
+  {id:'f044',cat:'porch',catName:'ポーチ',group:'facade',name:'モルタル金鏝抑え',maker:'左官仕上げ',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'ヘアークラック可能性あり'},
+  {id:'f045',cat:'porch',catName:'ポーチ',group:'facade',name:'ランドストン（OP）',maker:'Nagoya mozaic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡（外装標準品からの変更差額）'},
+  {id:'f046',cat:'porch',catName:'ポーチ',group:'facade',name:'ピエトラソーニ（OP）',maker:'Nagoya mozaic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡（外装標準品からの変更差額）'},
+  {id:'f047',cat:'porch',catName:'ポーチ',group:'facade',name:'ポーチサイズ拡張',maker:'追加工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:60000,unit:'㎡',priceText:'¥60,000/㎡UP',note:'1.8m×1.8m以上の場合'},
+  // 屋根・樋・軒天
+  {id:'f051',cat:'yane',catName:'屋根・樋・軒天',group:'facade',name:'屋根材 ニスクカラーSGL',maker:'日鉄鋼板',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'材料標準保証規格10年'},
+  {id:'f052',cat:'yane',catName:'屋根・樋・軒天',group:'facade',name:'破風',maker:'EP塗装',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内',colors:['ホワイト','ブラック']},
+  {id:'f053',cat:'yane',catName:'屋根・樋・軒天',group:'facade',name:'横樋 ファインスケアNF-I型',maker:'Panasonic',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'f054',cat:'yane',catName:'屋根・樋・軒天',group:'facade',name:'軒天 エンボス',maker:'神島化学',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'f055',cat:'yane',catName:'屋根・樋・軒天',group:'facade',name:'軒天 ラフォーレソレイユ',maker:'神島化学',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:12000,unit:'㎡',priceText:'¥12,000/㎡'},
+  {id:'f056',cat:'yane',catName:'屋根・樋・軒天',group:'facade',name:'軒天 ラフォーレティンバー',maker:'神島化学',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:12000,unit:'㎡',priceText:'¥12,000/㎡'},
+  {id:'f057',cat:'yane',catName:'屋根・樋・軒天',group:'facade',name:'軒天 アルテザート（木目調）',maker:'KONOSHIMA',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:18000,unit:'㎡',priceText:'¥18,000/㎡（5㎡まで¥80,000/式）',colors:['レッドシダーナチュラル','エイジング','オークナチュラル','ヴィンテージ','ウォルナットナチュラル','ダーク']},
+  // 庇
+  {id:'f061',cat:'hisashi',catName:'庇',group:'facade',name:'アルフィン庇 AD2S',maker:'アルフィン',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:258000,unit:'式',priceText:'¥258,000/式',colors:['ブラック','シルバー','ステンカラー','ブロンズ'],note:'W1800×D950'},
+  {id:'f062',cat:'hisashi',catName:'庇',group:'facade',name:'アルフィン庇 AF95 木目調',maker:'アルフィン',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:352000,unit:'式',priceText:'¥352,000/式',colors:['ヒッコリー','ウォルナット','チーク','ナラ'],note:'W1800×D900'},
+  // ガレージシャッター
+  {id:'f071',cat:'garage',catName:'電動ガレージシャッター',group:'facade',name:'サンオートハイスピード',maker:'三和シャッター',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:540000,unit:'式〜',priceText:'¥540,000〜/式',note:'防火仕様変更+¥60,000、スラットカラーリング+¥60,000'},
+  {id:'f072',cat:'garage',catName:'電動ガレージシャッター',group:'facade',name:'威風堂々',maker:'三和シャッター',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:1290000,unit:'式〜',priceText:'¥1,290,000〜/式',note:'防火仕様変更+¥60,000、木目調+¥660,000'},
+  // 窓 APW330
+  {id:'f081',cat:'mado330',catName:'窓 APW330',group:'facade',name:'APW330（標準）',maker:'YKKAP',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'坪数により10〜16カ所。掃き出し窓2カ所まで標準'},
+  {id:'f082',cat:'mado330',catName:'窓 APW330',group:'facade',name:'APW330 窓追加（〜W1650）22条地域',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:36000,unit:'カ所',priceText:'¥36,000/カ所'},
+  {id:'f083',cat:'mado330',catName:'窓 APW330',group:'facade',name:'APW330 窓追加（〜W1650）準防火地域',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:150000,unit:'カ所',priceText:'¥150,000/カ所'},
+  {id:'f084',cat:'mado330',catName:'窓 APW330',group:'facade',name:'APW330 掃出し追加（〜W1650）22条',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:18000,unit:'カ所',priceText:'¥18,000/カ所'},
+  {id:'f085',cat:'mado330',catName:'窓 APW330',group:'facade',name:'電動シャッター変更',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:60000,unit:'カ所',priceText:'¥60,000/カ所'},
+  {id:'f086',cat:'mado330',catName:'窓 APW330',group:'facade',name:'安全合わせガラス',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:100000,unit:'カ所',priceText:'¥100,000/カ所'},
+  // 窓 APW430
+  {id:'f091',cat:'mado430',catName:'窓 APW430',group:'facade',name:'APW430（LACIE/HOURS標準）',maker:'YKKAP',tags:['std'],lines:['lacie','hours'],priceType:'included',price:null,unit:'',priceText:'標準内（LACIE/HOURS）',note:'トリプルガラス'},
+  {id:'f092',cat:'mado430',catName:'窓 APW430',group:'facade',name:'APW430（LIFE+/LIFE OP）',maker:'YKKAP',tags:['op'],lines:['lifeplus','life'],priceType:'perUnit',price:20000,unit:'坪',priceText:'¥20,000×施工坪数/式',note:'LIFE+/LIFEはオプション'},
+  // 玄関ドア
+  {id:'f101',cat:'genkan-door',catName:'玄関ドア',group:'facade',name:'ヴェナートD30（LACIE/HOURS/LIFE+標準）',maker:'YKKAP',tags:['std'],lines:['lacie','hours','lifeplus'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'100V電気錠、ポケットキー付'},
+  {id:'f102',cat:'genkan-door',catName:'玄関ドア',group:'facade',name:'ヴェナートD30（LIFE OP）',maker:'YKKAP',tags:['op'],lines:['life'],priceType:'fixed',price:75000,unit:'カ所',priceText:'¥75,000/カ所'},
+  {id:'f103',cat:'genkan-door',catName:'玄関ドア',group:'facade',name:'顔認証キー',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:200000,unit:'式',priceText:'¥200,000/式（非防火のみ）'},
+  // 外部設備
+  {id:'f111',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'外部コンセント（追加）',maker:'電気設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:12000,unit:'カ所',priceText:'¥12,000/カ所',note:'1カ所標準'},
+  {id:'f112',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'エアコンスリーブキャップ（追加）',maker:'空調設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:12000,unit:'カ所',priceText:'¥12,000/カ所',note:'5カ所標準'},
+  {id:'f113',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'外部LAN用空配管',maker:'通信設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:30000,unit:'カ所',priceText:'¥30,000/カ所'},
+  {id:'f114',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'センサーライト付屋外ワイヤレスカメラ',maker:'防犯設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:120000,unit:'カ所',priceText:'¥120,000〜140,000/カ所'},
+  {id:'f115',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'露出用四角ボックス（将来防犯カメラ用）',maker:'電気設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:28000,unit:'カ所',priceText:'¥28,000/カ所'},
+  {id:'f116',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'散水栓/立水栓（追加）',maker:'水栓設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:36000,unit:'カ所',priceText:'¥36,000/カ所',note:'1カ所標準'},
+  {id:'f117',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'アルミ立水栓',maker:'水栓設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:28000,unit:'カ所',priceText:'¥28,000/カ所（形状変更差額）'},
+  {id:'f118',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'ステンレス混合立水栓',maker:'水栓設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:53000,unit:'カ所',priceText:'¥53,000/カ所'},
+  {id:'f119',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'地上波TVアンテナ',maker:'TV設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:95000,unit:'式',priceText:'¥95,000/式'},
+  {id:'f120',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'BSアンテナ',maker:'TV設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:80000,unit:'式',priceText:'TVアンテナ+¥80,000/式'},
+  {id:'f121',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'玄関用マルチフック',maker:'外部金物',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:20000,unit:'カ所',priceText:'¥20,000/カ所'},
+  {id:'f122',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'タープフック',maker:'外部金物',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:30000,unit:'2個セット',priceText:'¥30,000/2個セット'},
+  // エコキュート・換気
+  {id:'f131',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'エコキュート Sシリーズ 370L（標準）',maker:'Panasonic',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'f132',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'エコキュート 460L変更',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:100000,unit:'式',priceText:'¥100,000/式'},
+  {id:'f133',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'エコキュート ウルトラ高圧370L',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:100000,unit:'式',priceText:'¥100,000/式'},
+  {id:'f134',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'エコキュート ウルトラ高圧460L',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:145000,unit:'式',priceText:'¥145,000/式'},
+  {id:'f135',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'エコキュート 薄型370L',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:100000,unit:'式',priceText:'¥100,000/式'},
+  {id:'f136',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'おひさまエコキュート 370L',maker:'DAIKIN',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:152000,unit:'式',priceText:'¥152,000/式'},
+  {id:'f137',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'おひさまエコキュート 460L',maker:'DAIKIN',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:196000,unit:'式',priceText:'¥196,000/式'},
+  {id:'f138',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'ナイアガラ出湯 370L（1-2階）',maker:'日立',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:212000,unit:'式',priceText:'¥212,000/式'},
+  {id:'f139',cat:'ecocute',catName:'エコキュート・換気',group:'facade',name:'太陽光・蓄電池',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'estimate',price:null,unit:'',priceText:'別途見積もり'},
+
+  // ---- DETAIL ----
+  // ダイニングテーブル
+  {id:'d001',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'Gハウスオリジナル スクエア（ブラック/ホワイト）',maker:'Gハウスオリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:130000,unit:'台',priceText:'¥130,000〜',note:'W1500・1650・1800、天板17色、脚4種、コンセント2口付'},
+  {id:'d002',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'Gハウスオリジナル ラウンド（クワトロ）',maker:'Gハウスオリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:120000,unit:'台',priceText:'¥120,000〜',note:'W1100・1200、天板17色、脚4種'},
+  {id:'d003',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'Gハウスオリジナル ラウンド（オクタ）',maker:'Gハウスオリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:166000,unit:'台',priceText:'¥166,000〜'},
+  // 天井変更
+  {id:'d011',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'天井高UP（H2600迄）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:10000,unit:'㎡',priceText:'¥10,000/㎡',note:'天井変更する範囲の床坪数にて算出'},
+  {id:'d012',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'勾配天井工事',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:10000,unit:'㎡',priceText:'¥10,000/㎡'},
+  {id:'d013',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'下がり天井',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:8000,unit:'㎡',priceText:'¥8,000/㎡'},
+  {id:'d014',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'コーブ照明（間接照明BOX）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:8500,unit:'㎡',priceText:'¥8,500/㎡'},
+  {id:'d015',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'コーニス照明',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:11000,unit:'m',priceText:'¥11,000/m'},
+  {id:'d016',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'カーテンBOX（天井埋込タイプ）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:15000,unit:'m',priceText:'¥15,000/m',note:'勾配天井での採用不可'},
+  {id:'d017',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'カーテンBOX（下がり壁タイプ）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:20000,unit:'m',priceText:'¥15,000〜20,000/m'},
+  {id:'d018',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'火打ち梁（200mm毎）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:15000,unit:'m',priceText:'¥15,000/m'},
+  // 補強・下地
+  {id:'d021',cat:'hokyou',catName:'補強・下地',group:'detail',name:'壁下地補強（1m未満）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:3000,unit:'カ所',priceText:'¥3,000/カ所'},
+  {id:'d022',cat:'hokyou',catName:'補強・下地',group:'detail',name:'壁下地補強（2m未満）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:6000,unit:'カ所',priceText:'¥6,000/カ所'},
+  {id:'d023',cat:'hokyou',catName:'補強・下地',group:'detail',name:'壁下地補強（3m未満）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:9000,unit:'カ所',priceText:'¥9,000/カ所'},
+  {id:'d024',cat:'hokyou',catName:'補強・下地',group:'detail',name:'壁下地補強（4m未満）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:12000,unit:'カ所',priceText:'¥12,000/カ所'},
+  {id:'d025',cat:'hokyou',catName:'補強・下地',group:'detail',name:'ロールカーテン用天井下地',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:36000,unit:'カ所',priceText:'¥36,000/カ所'},
+  // ニッチ
+  {id:'d031',cat:'niche',catName:'ニッチ',group:'detail',name:'造作ニッチ',maker:'大工工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:30000,unit:'カ所',priceText:'¥30,000/カ所'},
+  {id:'d032',cat:'niche',catName:'ニッチ',group:'detail',name:'リモコンニッチ',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:30000,unit:'カ所',priceText:'¥30,000/カ所',note:'外壁側の壁への施工不可'},
+  // クロス
+  {id:'d035',cat:'cross',catName:'クロス・アクセント',group:'detail',name:'アクセントクロス',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:6000,unit:'カ所',priceText:'¥6,000/カ所',note:'1カ所(1,800×900)'},
+  {id:'d036',cat:'cross',catName:'クロス・アクセント',group:'detail',name:'マグネットクロス（マグマジック・シンコール）',maker:'シンコール',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:12000,unit:'㎡',priceText:'¥12,000/㎡'},
+  // 床材（フローリング）
+  {id:'d041',cat:'yuka',catName:'床材（フローリング）',group:'detail',name:'標準フローリング',maker:'各社メーカー',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'フローリングは1種類選択。貼り分けはフロア単位で別途¥30,000'},
+  {id:'d042',cat:'yuka',catName:'床材（フローリング）',group:'detail',name:'OP突板フローリング（グレード1）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:3000,unit:'㎡',priceText:'¥3,000/㎡差額'},
+  {id:'d043',cat:'yuka',catName:'床材（フローリング）',group:'detail',name:'OP突板フローリング（グレード2）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:6000,unit:'㎡',priceText:'¥6,000/㎡差額'},
+  {id:'d044',cat:'yuka',catName:'床材（フローリング）',group:'detail',name:'OPフローリング ビンテージ/ラスティック',maker:'イクタ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:10000,unit:'㎡',priceText:'¥10,000〜13,000/㎡差額'},
+  {id:'d045',cat:'yuka',catName:'床材（フローリング）',group:'detail',name:'OP挽き板フローリング（ライブナチュラルプレミアム）',maker:'朝日ウッドテック',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:13000,unit:'㎡',priceText:'¥13,000〜16,000/㎡差額'},
+  {id:'d046',cat:'yuka',catName:'床材（フローリング）',group:'detail',name:'OP無垢床（チャネルオリジナル・ユニシリーズ）',maker:'チャネルオリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:15000,unit:'㎡',priceText:'¥10,000〜18,000/㎡差額+配送料¥30,000'},
+  {id:'d047',cat:'yuka',catName:'床材（フローリング）',group:'detail',name:'OP無垢床ヘリンボーン',maker:'チャネルオリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:17000,unit:'㎡',priceText:'¥17,000〜20,000/㎡差額+配送料¥30,000'},
+  // 玄関框
+  {id:'d051',cat:'genkan-kamachi',catName:'玄関框',group:'detail',name:'標準玄関框',maker:'各社メーカー',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'d052',cat:'genkan-kamachi',catName:'玄関框',group:'detail',name:'薄見付框（プレイリーホームズ）〜1.8m迄',maker:'プレイリーホームズ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:24000,unit:'カ所',priceText:'¥24,000/カ所'},
+  {id:'d053',cat:'genkan-kamachi',catName:'玄関框',group:'detail',name:'薄見付框（プレイリーホームズ）〜2.8m迄',maker:'プレイリーホームズ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:36000,unit:'カ所',priceText:'¥36,000/カ所'},
+  // CF・フロアタイル
+  {id:'d060',cat:'cf-ft',catName:'床材（CF・フロアタイル）',group:'detail',name:'CFシート（東リ）',maker:'東リ',tags:['std','op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:3000,unit:'㎡',priceText:'標準/OP ¥3,000/㎡',note:'水廻り専用。水廻り以外は追加費用'},
+  {id:'d061',cat:'cf-ft',catName:'床材（CF・フロアタイル）',group:'detail',name:'フロアタイル マティルEサイズ（田島ルーフィング）',maker:'田島ルーフィング',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:8500,unit:'㎡',priceText:'¥8,500/㎡'},
+  {id:'d062',cat:'cf-ft',catName:'床材（CF・フロアタイル）',group:'detail',name:'フロアタイル マティルWサイズ（田島ルーフィング）',maker:'田島ルーフィング',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:7000,unit:'㎡',priceText:'¥7,000/㎡'},
+  {id:'d063',cat:'cf-ft',catName:'床材（CF・フロアタイル）',group:'detail',name:'フロアタイル コンクリート調（東リ・450角）',maker:'東リ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡'},
+  {id:'d064',cat:'cf-ft',catName:'床材（CF・フロアタイル）',group:'detail',name:'フロアタイル コンクリート調（東リ・600角）',maker:'東リ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:6500,unit:'㎡',priceText:'¥6,500/㎡'},
+  {id:'d065',cat:'cf-ft',catName:'床材（CF・フロアタイル）',group:'detail',name:'フロアタイル 石目調・木目調（東リ・450角）',maker:'東リ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡'},
+  {id:'d066',cat:'cf-ft',catName:'床材（CF・フロアタイル）',group:'detail',name:'フロアタイル 石目調・木目調（東リ・600角）',maker:'東リ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:6500,unit:'㎡',priceText:'¥6,500/㎡'},
+  // カーペットタイル
+  {id:'d070',cat:'carpet',catName:'カーペットタイル',group:'detail',name:'カーペットタイル（タイプ1）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:10000,unit:'㎡',priceText:'¥10,000/㎡'},
+  {id:'d071b',cat:'carpet',catName:'カーペットタイル',group:'detail',name:'カーペットタイル（タイプ2・高グレード）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:13000,unit:'㎡',priceText:'¥13,000/㎡'},
+  // タイル（内装）
+  {id:'d080',cat:'tile-naisou',catName:'タイル（内装）',group:'detail',name:'ランドストン（Nagoya mozaic）600角',maker:'名古屋モザイク',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:30000,unit:'㎡',priceText:'¥30,000/㎡+工事費¥30,000（6㎡以下+¥50,000）'},
+  {id:'d081',cat:'tile-naisou',catName:'タイル（内装）',group:'detail',name:'ピエトラソーニ（Nagoya mozaic）600角',maker:'名古屋モザイク',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:30000,unit:'㎡',priceText:'¥30,000/㎡+工事費¥30,000（6㎡以下+¥50,000）'},
+  {id:'d082',cat:'tile-naisou',catName:'タイル（内装）',group:'detail',name:'メンフィス（LIXIL）600角',maker:'LIXIL',tags:['op','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:25000,unit:'㎡',priceText:'¥25,000/㎡+工事費¥30,000（6㎡以下+¥50,000）'},
+  // 畳・小上がり
+  {id:'d090',cat:'tatami',catName:'畳・小上がり',group:'detail',name:'畳（清流・健やかたたみおもて）',maker:'大建工業',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:20000,unit:'半畳',priceText:'¥20,000/半畳'},
+  {id:'d091b',cat:'tatami',catName:'畳・小上がり',group:'detail',name:'小上がりスペース',maker:'大工工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:29000,unit:'㎡',priceText:'¥29,000/㎡',note:'高さH300・H350・H400より選択'},
+  {id:'d092',cat:'tatami',catName:'畳・小上がり',group:'detail',name:'小上がり下引出収納（H350）',maker:'大工工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:87000,unit:'カ所',priceText:'¥87,000/カ所'},
+  {id:'d093',cat:'tatami',catName:'畳・小上がり',group:'detail',name:'小上がり下引出収納（H400）',maker:'大工工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:92000,unit:'カ所',priceText:'¥92,000/カ所'},
+  // 点検口・換気
+  {id:'d095',cat:'tenken',catName:'点検口・換気システム',group:'detail',name:'床下点検口（城東テクノ 600×600）',maker:'城東テクノ',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'d096',cat:'tenken',catName:'点検口・換気システム',group:'detail',name:'Panasonic 第一種換気（追加）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:47000,unit:'カ所',priceText:'¥47,000/カ所'},
+  {id:'d097',cat:'tenken',catName:'点検口・換気システム',group:'detail',name:'DSDD換気システム変更',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:1500000,unit:'式',priceText:'¥1,500,000/式'},
+  // 階段
+  {id:'d100',cat:'kaidan',catName:'階段',group:'detail',name:'標準階段（踏板・蹴込板）',maker:'各社メーカー',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'d101b',cat:'kaidan',catName:'階段',group:'detail',name:'壁付I型手摺追加',maker:'LIXIL',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:15000,unit:'カ所',priceText:'¥15,000/カ所'},
+  {id:'d102b',cat:'kaidan',catName:'階段',group:'detail',name:'踊り場形状変更',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:80000,unit:'カ所',priceText:'¥80,000/カ所'},
+  {id:'d103',cat:'kaidan',catName:'階段',group:'detail',name:'アイアン手すり（フラットバー）',maker:'工事',tags:['op','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:240000,unit:'式',priceText:'¥240,000〜/式',note:'両側+¥250,000〜/式UP'},
+  {id:'d104',cat:'kaidan',catName:'階段',group:'detail',name:'アイアン階段（スレート）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:950000,unit:'式〜',priceText:'¥950,000〜/式',note:'一曲がり+¥100,000UP'},
+  {id:'d105',cat:'kaidan',catName:'階段',group:'detail',name:'アイアンまわり階段',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:950000,unit:'式〜',priceText:'¥950,000〜/式'},
+  {id:'d106',cat:'kaidan',catName:'階段',group:'detail',name:'カーペット階段（1〜2階分）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:210000,unit:'カ所',priceText:'¥210,000/カ所'},
+  {id:'d107',cat:'kaidan',catName:'階段',group:'detail',name:'カーペット階段（OP）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:350000,unit:'カ所',priceText:'¥350,000/カ所'},
+  // 窓台・腰壁・垂壁
+  {id:'d110',cat:'madodai',catName:'窓台・腰壁・垂壁',group:'detail',name:'腰壁笠木（Panasonic）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:15000,unit:'m',priceText:'¥15,000/m（1m以下¥15,000）'},
+  {id:'d111b',cat:'madodai',catName:'窓台・腰壁・垂壁',group:'detail',name:'垂壁',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:24000,unit:'m',priceText:'¥24,000/m'},
+  {id:'d112',cat:'madodai',catName:'窓台・腰壁・垂壁',group:'detail',name:'アーチ垂壁',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:36000,unit:'カ所',priceText:'¥36,000/カ所'},
+  // 室内ドア
+  {id:'d120',cat:'door',catName:'室内ドア',group:'detail',name:'標準室内ドア（PAデザイン）',maker:'Panasonic',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内（ハイドアH2400）'},
+  {id:'d121b',cat:'door',catName:'室内ドア',group:'detail',name:'ドアデザイン変更（ペイントカラー）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:10000,unit:'カ所',priceText:'¥10,000/カ所'},
+  {id:'d122b',cat:'door',catName:'室内ドア',group:'detail',name:'ドアデザイン変更（ソリッドカラー）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:20000,unit:'カ所',priceText:'¥20,000/カ所'},
+  {id:'d123',cat:'door',catName:'室内ドア',group:'detail',name:'開き戸→片引戸変更',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:36000,unit:'カ所',priceText:'¥36,000/カ所'},
+  {id:'d124',cat:'door',catName:'室内ドア',group:'detail',name:'表示錠付きに変更',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:5000,unit:'カ所',priceText:'¥5,000/カ所'},
+  {id:'d125',cat:'door',catName:'室内ドア',group:'detail',name:'ドアデザイン変更（WBデザイン・アクリル板）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:50000,unit:'カ所',priceText:'¥50,000/カ所'},
+  {id:'d126',cat:'door',catName:'室内ドア',group:'detail',name:'ドアデザイン変更（WCデザイン・ガラス）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:105000,unit:'カ所',priceText:'¥105,000/カ所'},
+  {id:'d127',cat:'door',catName:'室内ドア',group:'detail',name:'室内ドア追加（開き戸）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:35000,unit:'カ所',priceText:'¥35,000/カ所'},
+  {id:'d128',cat:'door',catName:'室内ドア',group:'detail',name:'室内ドア追加（引戸）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:71000,unit:'カ所',priceText:'¥71,000/カ所'},
+  {id:'d129',cat:'door',catName:'室内ドア',group:'detail',name:'収納用建具',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:90000,unit:'カ所',priceText:'¥90,000/カ所'},
+  // 室内窓
+  {id:'d130',cat:'shitsunai-mado',catName:'室内窓',group:'detail',name:'室内窓Aパターン（標準ガラス）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:135000,unit:'式',priceText:'¥135,000/式',note:'枠色：オフブラック/ホワイト'},
+  {id:'d131c',cat:'shitsunai-mado',catName:'室内窓',group:'detail',name:'室内窓Aパターン（OPガラス）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:200000,unit:'式',priceText:'¥200,000/式'},
+  {id:'d132c',cat:'shitsunai-mado',catName:'室内窓',group:'detail',name:'室内窓Bパターン（標準ガラス）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:197000,unit:'式',priceText:'¥197,000/式'},
+  {id:'d133',cat:'shitsunai-mado',catName:'室内窓',group:'detail',name:'室内窓Cパターン（FIX・標準ガラス）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:71000,unit:'式',priceText:'¥71,000/式'},
+  {id:'d134',cat:'shitsunai-mado',catName:'室内窓',group:'detail',name:'ガラス枚数追加',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:15000,unit:'枚',priceText:'+¥15,000/枚'},
+  // アクセントパネル
+  {id:'d140',cat:'accent-panel',catName:'アクセントパネル',group:'detail',name:'セラール（AICA）',maker:'AICA',tags:['op','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:33000,unit:'枚',priceText:'¥33,000/枚',note:'900×2400、見切り材(2本)+¥8,000'},
+  {id:'d141b',cat:'accent-panel',catName:'アクセントパネル',group:'detail',name:'セラール セレント（AICA）',maker:'AICA',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:44000,unit:'枚',priceText:'¥44,000/枚'},
+  {id:'d142b',cat:'accent-panel',catName:'アクセントパネル',group:'detail',name:'THE WALL 朝日ウッドテック（ランダムピッチ）',maker:'朝日ウッドテック',tags:['op','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:20000,unit:'㎡',priceText:'¥15,000〜60,000/㎡',note:'突板¥20,000、挽き板¥21,000〜¥60,000/㎡'},
+  // 格子
+  {id:'d150',cat:'koushi',catName:'格子',group:'detail',name:'インテリア格子（LIXIL）W045〜',maker:'LIXIL',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:110000,unit:'カ所',priceText:'¥110,000〜190,000/カ所',colors:['クリエペール','クリエラスク','クリエダーク','コウノキ'],note:'W045:¥110,000、W085:¥130,000、W12:¥160,000、W16:¥190,000'},
+  // アクセントタイル
+  {id:'d160',cat:'accent-tile',catName:'アクセントタイル・エコカラット',group:'detail',name:'アクセントタイル（名古屋モザイク）スカンジナビアストン等',maker:'名古屋モザイク',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:26000,unit:'㎡',priceText:'¥22,000〜30,000/㎡+工事費¥30,000（6㎡以下+¥50,000）'},
+  {id:'d161b',cat:'accent-tile',catName:'アクセントタイル・エコカラット',group:'detail',name:'アクセントタイル（平田タイル）',maker:'平田タイル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:27000,unit:'㎡',priceText:'¥25,000〜53,000/㎡+工事費¥30,000（6㎡以下+¥50,000）'},
+  {id:'d162b',cat:'accent-tile',catName:'アクセントタイル・エコカラット',group:'detail',name:'エコカラット グランクォーツ/ラフセメント（LIXIL）',maker:'LIXIL',tags:['op','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:32000,unit:'㎡',priceText:'¥32,000/㎡+工事費¥30,000（6㎡以下+¥50,000）'},
+  // インテリアカウンター
+  {id:'d170',cat:'counter',catName:'インテリアカウンター',group:'detail',name:'カウンター（トイレちょい置き用・W〜1000）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:20000,unit:'カ所',priceText:'¥20,000/カ所'},
+  {id:'d171b',cat:'counter',catName:'インテリアカウンター',group:'detail',name:'カウンター アングル型（W〜1000）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:41000,unit:'カ所',priceText:'¥41,000/カ所'},
+  {id:'d172b',cat:'counter',catName:'インテリアカウンター',group:'detail',name:'カウンター アングル型（W1001〜1800）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:58000,unit:'カ所',priceText:'¥58,000/カ所'},
+  {id:'d173b',cat:'counter',catName:'インテリアカウンター',group:'detail',name:'カウンター ブラケット型（W〜1000）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:41000,unit:'カ所',priceText:'¥41,000/カ所'},
+  {id:'d174',cat:'counter',catName:'インテリアカウンター',group:'detail',name:'カウンター ブラケット型（W1001〜1800）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:64000,unit:'カ所',priceText:'¥64,000/カ所'},
+  {id:'d175',cat:'counter',catName:'インテリアカウンター',group:'detail',name:'カウンター 耐水集成タイプD451〜600（W〜1000）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:61000,unit:'カ所',priceText:'¥61,000/カ所'},
+  // 収納棚
+  {id:'d180',cat:'shunou',catName:'収納棚',group:'detail',name:'標準収納棚（枕棚+PH各居室1カ所）',maker:'各社メーカー',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'標準内'},
+  {id:'d181b',cat:'shunou',catName:'収納棚',group:'detail',name:'枕棚のみ（W〜910）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:18000,unit:'カ所',priceText:'¥18,000〜42,000/カ所'},
+  {id:'d182b',cat:'shunou',catName:'収納棚',group:'detail',name:'枕棚+中段D840（W〜910）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:20000,unit:'カ所',priceText:'¥20,000〜61,000/カ所'},
+  {id:'d183',cat:'shunou',catName:'収納棚',group:'detail',name:'可動棚（両壁収まり）D300×2枚（W〜900）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:25000,unit:'カ所',priceText:'¥25,000/カ所'},
+  {id:'d184',cat:'shunou',catName:'収納棚',group:'detail',name:'可動棚（両壁収まり）D450×2枚（W〜900）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:27000,unit:'カ所',priceText:'¥27,000/カ所'},
+  {id:'d185',cat:'shunou',catName:'収納棚',group:'detail',name:'可動棚（両壁収まり）D300×4枚（W〜900）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:30000,unit:'カ所',priceText:'¥30,000/カ所'},
+  {id:'d186',cat:'shunou',catName:'収納棚',group:'detail',name:'可動棚（両壁収まり）D450×4枚（W〜900）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:32000,unit:'カ所',priceText:'¥32,000/カ所'},
+  {id:'d187',cat:'shunou',catName:'収納棚',group:'detail',name:'可動棚（両壁収まり）D300×6枚（W〜900）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:37000,unit:'カ所',priceText:'¥37,000/カ所'},
+  {id:'d188',cat:'shunou',catName:'収納棚',group:'detail',name:'可動棚（両壁収まり）D450×6枚（W〜900）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:43000,unit:'カ所',priceText:'¥43,000/カ所'},
+  {id:'d189',cat:'shunou',catName:'収納棚',group:'detail',name:'樹脂製可動棚 S1（棚板D300×8枚）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:71000,unit:'カ所',priceText:'¥71,000/カ所'},
+  {id:'d190',cat:'shunou',catName:'収納棚',group:'detail',name:'樹脂製可動棚 S2',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:120000,unit:'カ所',priceText:'¥120,000/カ所'},
+  {id:'d191',cat:'shunou',catName:'収納棚',group:'detail',name:'樹脂製可動棚 S3',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:141000,unit:'カ所',priceText:'¥141,000/カ所'},
+  {id:'d192',cat:'shunou',catName:'収納棚',group:'detail',name:'ハンガーパイプ1本（固定）W〜1000',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:10000,unit:'カ所',priceText:'¥10,000/カ所'},
+  {id:'d193',cat:'shunou',catName:'収納棚',group:'detail',name:'ハンガーパイプセットP1',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:37000,unit:'カ所',priceText:'¥37,000/カ所'},
+  {id:'d194',cat:'shunou',catName:'収納棚',group:'detail',name:'ハンガーパイプセットP2',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:50000,unit:'カ所',priceText:'¥50,000/カ所'},
+  {id:'d195',cat:'shunou',catName:'収納棚',group:'detail',name:'ランドリー可動棚（W600）',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:37000,unit:'カ所',priceText:'¥37,000/カ所'},
+  // 玄関靴箱
+  {id:'d200',cat:'kutsubako',catName:'玄関靴箱',group:'detail',name:'コンポリア フロートタイプ W800',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:100000,unit:'カ所',priceText:'¥100,000/カ所'},
+  {id:'d201',cat:'kutsubako',catName:'玄関靴箱',group:'detail',name:'コンポリア フロートタイプ W1200',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:150000,unit:'カ所',priceText:'¥150,000/カ所'},
+  {id:'d202',cat:'kutsubako',catName:'玄関靴箱',group:'detail',name:'コンポリア フロートタイプ W1600',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:200000,unit:'カ所',priceText:'¥200,000/カ所'},
+  {id:'d203',cat:'kutsubako',catName:'玄関靴箱',group:'detail',name:'コンポリア ミラー追加',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:36000,unit:'カ所',priceText:'+¥36,000/カ所'},
+  // トイレ収納
+  {id:'d210',cat:'toilet-shunou',catName:'トイレ収納',group:'detail',name:'サニタトイレ収納ボックス（造作）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:53000,unit:'カ所',priceText:'¥53,000/カ所'},
+  {id:'d211',cat:'toilet-shunou',catName:'トイレ収納',group:'detail',name:'造作トイレ収納',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:47000,unit:'カ所',priceText:'¥47,000/カ所'},
+  {id:'d212',cat:'toilet-shunou',catName:'トイレ収納',group:'detail',name:'トイレ上部収納',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:60000,unit:'カ所',priceText:'¥60,000/カ所'},
+  {id:'d213',cat:'toilet-shunou',catName:'トイレ収納',group:'detail',name:'トイレ背面収納スペース',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:35000,unit:'カ所',priceText:'¥35,000/カ所',note:'棚板は含まれません'},
+  // スロップシンク・洗濯パン
+  {id:'d220',cat:'slop',catName:'スロップシンク・洗濯パン',group:'detail',name:'スロップシンク（TOTO）ボウル+水栓+給排水',maker:'TOTO',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:115000,unit:'カ所',priceText:'¥115,000/カ所+給排水工事費',note:'1F給排水+¥60,000、2F+¥82,000'},
+  {id:'d221',cat:'slop',catName:'スロップシンク・洗濯パン',group:'detail',name:'洗濯パン（1階給排水込み）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:24000,unit:'カ所',priceText:'¥24,000/カ所（1F追加），2F+¥82,000'},
+  // 玄関手洗い
+  {id:'d230',cat:'tearai',catName:'玄関手洗い',group:'detail',name:'玄関手洗い Aタイプ（ボウル+水栓壁付+インテリアカウンター）',maker:'KAKUDAI',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:85000,unit:'式',priceText:'¥85,000〜（ボウル¥19,000+カウンター¥41,000+水栓等）',colors:['マットホワイト','マットブラック','マットグレー']},
+  {id:'d231',cat:'tearai',catName:'玄関手洗い',group:'detail',name:'玄関手洗い Bタイプ（壁付け+ふかし壁）',maker:'KAKUDAI',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:60000,unit:'式',priceText:'¥60,000/式（ふかし壁含）',note:'W750迄H1100'},
+  {id:'d232',cat:'tearai',catName:'玄関手洗い',group:'detail',name:'玄関手洗い KAKUDAI ステンレスコーナーカウンター',maker:'KAKUDAI',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:96000,unit:'式',priceText:'¥96,000〜/式（給排水別途）'},
+  // 物干し・乾太くん
+  {id:'d240',cat:'monohoshi',catName:'物干し・乾太くん',group:'detail',name:'ホスクリーン（川口技研）1本目',maker:'川口技研',tags:['std'],lines:['lacie','hours','lifeplus','life'],priceType:'included',price:null,unit:'',priceText:'1本標準',note:'2カ所目から¥24,000/セット'},
+  {id:'d241',cat:'monohoshi',catName:'物干し・乾太くん',group:'detail',name:'ホスクリーン追加（川口技研）',maker:'川口技研',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:24000,unit:'カ所',priceText:'¥24,000/カ所（2カ所目から）'},
+  {id:'d242',cat:'monohoshi',catName:'物干し・乾太くん',group:'detail',name:'ホスクリーン昇降タイプ（追加）',maker:'川口技研',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:24000,unit:'カ所',priceText:'¥24,000/カ所（2カ所目から）'},
+  {id:'d243',cat:'monohoshi',catName:'物干し・乾太くん',group:'detail',name:'乾太くん スタンダード（6kg）',maker:'リンナイ',tags:['op','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:272000,unit:'カ所',priceText:'¥272,000/カ所（設置工事含む）',note:'ガス引込工事¥350,000/式別途'},
+  {id:'d244',cat:'monohoshi',catName:'物干し・乾太くん',group:'detail',name:'乾太くん デラックス（9kg）',maker:'リンナイ',tags:['op','hit'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:330000,unit:'カ所',priceText:'¥330,000/カ所（設置工事含む）'},
+  {id:'d245',cat:'monohoshi',catName:'物干し・乾太くん',group:'detail',name:'乾太くん専用収納ユニット',maker:'リンナイ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:140000,unit:'カ所',priceText:'¥140,000/カ所'},
+  {id:'d246',cat:'monohoshi',catName:'物干し・乾太くん',group:'detail',name:'乾太くん専用架台',maker:'リンナイ',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:30000,unit:'カ所',priceText:'¥30,000/カ所'},
+  {id:'d247',cat:'monohoshi',catName:'物干し・乾太くん',group:'detail',name:'ガス引込工事（乾太くん用）',maker:'ガス工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:350000,unit:'式',priceText:'¥350,000/式'},
+  // スイッチ・コンセント
+  {id:'d250',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'2口コンセント追加',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:6000,unit:'カ所',priceText:'¥6,000/カ所'},
+  {id:'d251',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'スイッチ追加',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:5000,unit:'カ所',priceText:'¥5,000/カ所'},
+  {id:'d252',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'4口コンセント追加',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:8000,unit:'カ所',priceText:'¥8,000/カ所'},
+  {id:'d253',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'LANコンセント追加（空配管）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:12000,unit:'カ所',priceText:'¥12,000/カ所'},
+  {id:'d254',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'壁掛けテレビ用空配管',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:15000,unit:'カ所',priceText:'¥15,000/カ所'},
+  {id:'d255',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'アドバンスシリーズ一式（全体）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:72000,unit:'式',priceText:'¥72,000/一式（箇所別色変更不可）'},
+  {id:'d256',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'アドバンスシリーズ一式（箇所別色変更可）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:120000,unit:'式',priceText:'¥120,000/一式'},
+  {id:'d257',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'床用コンセント（アップコン）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:12000,unit:'カ所',priceText:'¥12,000〜15,000/カ所'},
+  {id:'d258',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'どこでもドアホン',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:50000,unit:'カ所',priceText:'¥50,000/カ所'},
+  {id:'d259',cat:'switch',catName:'スイッチ・コンセント',group:'detail',name:'外でもドアホン',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:62000,unit:'カ所',priceText:'¥62,000〜64,000/カ所'},
+  // エアコン
+  {id:'d270',cat:'aircon',catName:'エアコン',group:'detail',name:'全館空調システム',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'estimate',price:null,unit:'',priceText:'別途見積もり'},
+  {id:'d271',cat:'aircon',catName:'エアコン',group:'detail',name:'エアコン用コンセント100V追加',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:6000,unit:'カ所',priceText:'¥6,000/カ所'},
+  {id:'d272',cat:'aircon',catName:'エアコン',group:'detail',name:'エアコン用コンセント200V追加（内壁のみ）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:40000,unit:'カ所',priceText:'¥40,000/カ所',note:'外壁面・内壁がない場合天井付け'},
+];
+
+const CATEGORIES = [
+  {id:'all',name:'すべて',group:'all'},
+  {id:'facade-header',name:'FACADE（外部）',group:'header-facade'},
+
+  {id:'gaiheki',name:'外壁（サイディング）',group:'facade'},
+  {id:'gaiheki-kinzoku',name:'外壁（金属サイディング）',group:'facade'},
+  {id:'gaiheki-nuri',name:'外壁（塗り壁）',group:'facade'},
+  {id:'gaiheki-solido',name:'外壁（SOLIDO）',group:'facade'},
+  {id:'porch',name:'ポーチ',group:'facade'},
+  {id:'yane',name:'屋根・樋・軒天',group:'facade'},
+  {id:'hisashi',name:'庇',group:'facade'},
+  {id:'garage',name:'電動ガレージシャッター',group:'facade'},
+  {id:'mado330',name:'窓 APW330',group:'facade'},
+  {id:'mado430',name:'窓 APW430',group:'facade'},
+  {id:'genkan-door',name:'玄関ドア',group:'facade'},
+  {id:'gaibu-setsubi',name:'外部設備',group:'facade'},
+  {id:'ecocute',name:'エコキュート・換気',group:'facade'},
+  {id:'detail-header',name:'DETAIL（内部）',group:'header-detail'},
+  {id:'dining',name:'ダイニングテーブル',group:'detail'},
+  {id:'tenjou',name:'天井変更工事',group:'detail'},
+  {id:'hokyou',name:'補強・下地',group:'detail'},
+  {id:'niche',name:'ニッチ',group:'detail'},
+  {id:'cross',name:'クロス・アクセント',group:'detail'},
+  {id:'yuka',name:'床材（フローリング）',group:'detail'},
+  {id:'genkan-kamachi',name:'玄関框',group:'detail'},
+  {id:'cf-ft',name:'床材（CF・フロアタイル）',group:'detail'},
+  {id:'carpet',name:'カーペットタイル',group:'detail'},
+  {id:'tile-naisou',name:'タイル（内装）',group:'detail'},
+  {id:'tatami',name:'畳・小上がり',group:'detail'},
+  {id:'tenken',name:'点検口・換気システム',group:'detail'},
+  {id:'kaidan',name:'階段',group:'detail'},
+  {id:'madodai',name:'窓台・腰壁・垂壁',group:'detail'},
+  {id:'door',name:'室内ドア',group:'detail'},
+  {id:'shitsunai-mado',name:'室内窓',group:'detail'},
+  {id:'accent-panel',name:'アクセントパネル',group:'detail'},
+  {id:'koushi',name:'格子',group:'detail'},
+  {id:'accent-tile',name:'アクセントタイル・エコカラット',group:'detail'},
+  {id:'counter',name:'インテリアカウンター',group:'detail'},
+  {id:'shunou',name:'収納棚',group:'detail'},
+  {id:'kutsubako',name:'玄関靴箱',group:'detail'},
+  {id:'toilet-shunou',name:'トイレ収納',group:'detail'},
+  {id:'slop',name:'スロップシンク・洗濯パン',group:'detail'},
+  {id:'tearai',name:'玄関手洗い',group:'detail'},
+  {id:'monohoshi',name:'物干し・乾太くん',group:'detail'},
+  {id:'switch',name:'スイッチ・コンセント',group:'detail'},
+  {id:'aircon',name:'エアコン',group:'detail'},
+];
+
+function fmtPrice(n) {
+  if(n===null||n===undefined) return '-';
+  return '¥' + n.toLocaleString('ja-JP');
+}
+
+function calcItemTotal(sel) {
+  const p = sel.customPrice !== null ? sel.customPrice : (sel.product.price || 0);
+  return p * (parseFloat(sel.qty) || 1);
+}
+
+// ===== COMPONENTS =====
+
+function App() {
+  const [tab, setTab] = useState('select');
+  const [activeCat, setActiveCat] = useState('all');
+  const [lineFilter, setLineFilter] = useState('all');
+  const [tagFilter, setTagFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [cart, setCart] = useState([]);
+  const [customerName, setCustomerName] = useState('');
+  const [customerLine, setCustomerLine] = useState('');
+  const [customerDate, setCustomerDate] = useState(new Date().toISOString().slice(0,10));
+  const [coordinator, setCoordinator] = useState('');
+
+  const cartIds = useMemo(() => new Set(cart.map(c=>c.product.id)), [cart]);
+
+  const filtered = useMemo(() => {
+    return PRODUCTS.filter(p => {
+      if(activeCat !== 'all' && p.cat !== activeCat) return false;
+      if(lineFilter !== 'all' && !p.lines.includes(lineFilter)) return false;
+      if(tagFilter !== 'all' && !p.tags.includes(tagFilter)) return false;
+      if(search) {
+        const q = search.toLowerCase();
+        if(!p.name.toLowerCase().includes(q) && !p.maker.toLowerCase().includes(q) && !p.catName.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [activeCat, lineFilter, tagFilter, search]);
+
+  const grouped = useMemo(() => {
+    const g = {};
+    filtered.forEach(p => {
+      if(!g[p.cat]) g[p.cat] = {catName:p.catName, group:p.group, items:[]};
+      g[p.cat].items.push(p);
+    });
+    return g;
+  }, [filtered]);
+
+  const addToCart = useCallback((product) => {
+    if(cartIds.has(product.id)) return;
+    const defaultQty = product.priceType === 'fixed' ? 1 : '';
+    setCart(prev => [...prev, {
+      id: Date.now() + Math.random(),
+      product,
+      qty: defaultQty,
+      unit: product.unit,
+      selectedColor: product.colors ? product.colors[0] : '',
+      customPrice: null,
+      note: '',
+    }]);
+  }, [cartIds]);
+
+  const removeFromCart = useCallback((selId) => {
+    setCart(prev => prev.filter(s => s.id !== selId));
+  }, []);
+
+  const updateSel = useCallback((selId, field, val) => {
+    setCart(prev => prev.map(s => s.id === selId ? {...s, [field]: val} : s));
+  }, []);
+
+  const totals = useMemo(() => {
+    let subtotal = 0;
+    let priceable = 0;
+    cart.forEach(s => {
+      const p = s.customPrice !== null ? s.customPrice : (s.product.price||0);
+      if(p > 0 && s.qty) {
+        subtotal += p * (parseFloat(s.qty)||1);
+        priceable++;
+      }
+    });
+    return {subtotal, priceable};
+  }, [cart]);
+
+  const catCounts = useMemo(() => {
+    const c = {};
+    PRODUCTS.forEach(p => {
+      c[p.cat] = (c[p.cat]||0) + 1;
+    });
+    return c;
+  }, []);
+
+  return (
+    <div className="app">
+      {/* HEADER */}
+      <header className="header no-print">
+        <div className="header-logo"><span>G HOUSE</span> COORDINATE</div>
+        <div className="header-tabs">
+          <button className={`tab-btn${tab==='select'?' active':''}`} onClick={()=>setTab('select')}>📋 商品選択</button>
+          <button className={`tab-btn${tab==='proposal'?' active':''}`} onClick={()=>setTab('proposal')}>📄 仕様書・提案書</button>
+        </div>
+        <div className="header-customer">
+          <input className="header-input" placeholder="お客様名" value={customerName} onChange={e=>setCustomerName(e.target.value)}/>
+          <input className="header-input" placeholder="担当コーディネータ" value={coordinator} onChange={e=>setCoordinator(e.target.value)} style={{width:140}}/>
+          <input type="date" className="header-select" value={customerDate} onChange={e=>setCustomerDate(e.target.value)}/>
+          <div className="header-line-filter">
+            {['all','lacie','hours','lifeplus','life'].map(l=>(
+              <button key={l} className={`lf-btn${lineFilter===l?' active':''}`} onClick={()=>setLineFilter(l)}>
+                {l==='all'?'ALL':l==='lifeplus'?'LIFE+':l.toUpperCase()}
+              </button>
+            ))}
+          </div>
+        </div>
+      </header>
+
+      {/* SELECT TAB */}
+      {tab === 'select' && (
+        <div className="body">
+          {/* SIDEBAR */}
+          <nav className="sidebar no-print">
+            <div className="sidebar-group">
+              <div className={`sidebar-item${activeCat==='all'?' active':''}`} onClick={()=>setActiveCat('all')}>
+                すべて表示 <span className="ct">{PRODUCTS.length}</span>
+              </div>
+            </div>
+            {CATEGORIES.filter(c=>c.group!=='all').map(c=>{
+              if(c.group==='header-facade') return (
+                <div key={c.id} className="sidebar-grouplabel facade">{c.name}</div>
+              );
+              if(c.group==='header-detail') return (
+                <div key={c.id} className="sidebar-grouplabel detail">{c.name}</div>
+              );
+              return (
+                <div key={c.id} className={`sidebar-item${activeCat===c.id?' active':''}`} onClick={()=>setActiveCat(c.id)}>
+                  {c.name} <span className="ct">{catCounts[c.id]||0}</span>
+                </div>
+              );
+            })}
+          </nav>
+
+          {/* MAIN CONTENT */}
+          <div className="main">
+            <div className="search-bar no-print">
+              <input className="search-input" placeholder="🔍 商品名・メーカーで検索..." value={search} onChange={e=>setSearch(e.target.value)}/>
+              <div className="filter-tags">
+                {[['all','ALL'],['std','標準'],['op','OP'],['hit','HIT!']].map(([v,l])=>(
+                  <button key={v} className={`ftag ${v}${tagFilter===v?' active':''}`} onClick={()=>setTagFilter(v)}>{l}</button>
+                ))}
+              </div>
+            </div>
+            <div className="products">
+              {Object.keys(grouped).length === 0 && (
+                <div style={{textAlign:'center',padding:'60px',color:'var(--muted)'}}>
+                  <div style={{fontSize:40,marginBottom:10}}>🔍</div>
+                  <div>該当する商品が見つかりませんでした</div>
+                </div>
+              )}
+              {Object.entries(grouped).map(([catKey, {catName, group, items}]) => (
+                <div key={catKey}>
+                  <div className="cat-title">
+                    <span>{catName}</span>
+                    <span className={`group-badge ${group}`}>{group==='facade'?'外部':'内部'}</span>
+                    <span style={{marginLeft:'auto',fontSize:11,opacity:.7}}>{items.length}件</span>
+                  </div>
+                  <div className="product-grid">
+                    {items.map(p => (
+                      <ProductCard key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart} lineFilter={lineFilter}/>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* CART */}
+          <CartPanel
+            cart={cart}
+            totals={totals}
+            onRemove={removeFromCart}
+            onUpdate={updateSel}
+            onClear={()=>setCart([])}
+            onProposal={()=>setTab('proposal')}
+          />
+        </div>
+      )}
+
+      {/* PROPOSAL TAB */}
+      {tab === 'proposal' && (
+        <div className="proposal active">
+          <div className="no-print" style={{maxWidth:800,margin:'0 auto 16px',display:'flex',gap:10,alignItems:'center'}}>
+            <button className="print-btn" onClick={()=>window.print()}>🖨 印刷 / PDF保存</button>
+            <button onClick={()=>setTab('select')} style={{padding:'8px 16px',border:'1px solid var(--border)',borderRadius:6,background:'#fff',cursor:'pointer',fontSize:12}}>← 選択画面に戻る</button>
+          </div>
+          <ProposalView
+            cart={cart}
+            customerName={customerName}
+            customerLine={lineFilter !== 'all' ? (lineFilter==='lifeplus'?'LIFE+':lineFilter.toUpperCase()) : customerLine}
+            coordinator={coordinator}
+            date={customerDate}
+            totals={totals}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ProductCard({product, inCart, onAdd, lineFilter}) {
+  const p = product;
+  return (
+    <div className={`product-card${inCart?' selected':''}`}>
+      <button className={`add-btn${inCart?' in-cart':''}`} onClick={()=>onAdd(p)} title={inCart?'選択済み':'カートに追加'}>
+        {inCart ? '✓' : '+'}
+      </button>
+      <div className="pc-name">{p.name}</div>
+      <div className="pc-maker">{p.maker}</div>
+      <div className="pc-tags">
+        {p.tags.map(t=>(
+          <span key={t} className={`tag ${t}`}>
+            {t==='std'?'標準':t==='op'?'OP':t==='hit'?'HIT!':t}
+          </span>
+        ))}
+      </div>
+      <div className="pc-price">
+        {p.priceText}
+        {p.unit && p.priceType==='perUnit' && <span className="unit"> ({p.unit}単価)</span>}
+      </div>
+      {p.colors && p.colors.length > 0 && (
+        <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>
+          カラー: {p.colors.slice(0,3).join(' / ')}{p.colors.length>3?`他${p.colors.length-3}色`:''}
+        </div>
+      )}
+      {p.note && <div className="pc-note">{p.note}</div>}
+      <div className="pc-lines">
+        {p.lines.map(l=>(
+          <span key={l} className={`pl ${l}`}>
+            {l==='lifeplus'?'LIFE+':l.toUpperCase()}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CartPanel({cart, totals, onRemove, onUpdate, onClear, onProposal}) {
+  return (
+    <aside className="cart no-print">
+      <div className="cart-header">
+        <span>選択リスト</span>
+        <div style={{display:'flex',gap:8,alignItems:'center'}}>
+          <span style={{fontSize:11,color:'#8899aa'}}>{totals.priceable}件 計算済</span>
+          <div className="cnt">{cart.length}</div>
+        </div>
+      </div>
+
+      {cart.length === 0 ? (
+        <div className="empty-cart">
+          <div className="icon">🛒</div>
+          <div>商品を選択してください</div>
+          <div style={{fontSize:11,marginTop:6}}>カードの「+」ボタンで追加</div>
+        </div>
+      ) : (
+        <div className="cart-items">
+          {cart.map(sel => (
+            <CartItem key={sel.id} sel={sel} onRemove={onRemove} onUpdate={onUpdate}/>
+          ))}
+        </div>
+      )}
+
+      <div className="cart-footer">
+        {totals.priceable > 0 && (
+          <>
+            <div className="total-row">
+              <span className="total-label">価格ありオプション計</span>
+              <span className="total-val">{fmtPrice(totals.subtotal)}</span>
+            </div>
+            <div className="total-row grand">
+              <span>OP合計（税抜）</span>
+              <span className="grand-val">{fmtPrice(totals.subtotal)}</span>
+            </div>
+            <div style={{fontSize:10,color:'var(--muted)',marginTop:4}}>※標準品・見積品は含まず</div>
+          </>
+        )}
+        <button className="proposal-btn" onClick={onProposal}>📄 仕様書・提案書を作成</button>
+        {cart.length > 0 && (
+          <button className="clear-btn" onClick={onClear}>選択をすべてクリア</button>
+        )}
+      </div>
+    </aside>
+  );
+}
+
+function CartItem({sel, onRemove, onUpdate}) {
+  const p = sel.product;
+  const hasPrice = p.priceType === 'perUnit' || p.priceType === 'fixed';
+  const displayPrice = sel.customPrice !== null ? sel.customPrice : (p.price || 0);
+  const total = hasPrice && sel.qty ? displayPrice * (parseFloat(sel.qty)||1) : null;
+
+  return (
+    <div className="cart-item">
+      <button className="ci-remove" onClick={()=>onRemove(sel.id)}>×</button>
+      <div className="ci-name">{p.name}</div>
+      <div className="ci-maker">{p.maker}</div>
+
+      {p.colors && p.colors.length > 0 && (
+        <select className="ci-color" style={{marginTop:4}} value={sel.selectedColor} onChange={e=>onUpdate(sel.id,'selectedColor',e.target.value)}>
+          {p.colors.map(c=><option key={c}>{c}</option>)}
+        </select>
+      )}
+
+      <div className="ci-controls">
+        {(p.priceType==='perUnit' || p.priceType==='fixed') && (
+          <div className="ci-qty">
+            <button className="qty-btn" onClick={()=>onUpdate(sel.id,'qty',Math.max(0,(parseFloat(sel.qty)||0)-1))}>−</button>
+            <input className="qty-input" type="number" min="0" step="0.5" value={sel.qty} onChange={e=>onUpdate(sel.id,'qty',e.target.value)} placeholder="数量"/>
+            <span style={{fontSize:11,color:'var(--muted)'}}>{sel.unit||p.unit}</span>
+            <button className="qty-btn" onClick={()=>onUpdate(sel.id,'qty',(parseFloat(sel.qty)||0)+1)}>＋</button>
+          </div>
+        )}
+      </div>
+
+      {hasPrice && (
+        <div className="ci-price-row">
+          <span className="ci-price-label">
+            単価：
+            <input className="ci-custom-price" type="number" value={sel.customPrice !== null ? sel.customPrice : (p.price||0)}
+              onChange={e=>onUpdate(sel.id,'customPrice',e.target.value===''?null:Number(e.target.value))} placeholder="単価"/>
+            <span style={{fontSize:10,color:'var(--muted)'}}> /{p.unit}</span>
+          </span>
+          {total !== null && sel.qty && (
+            <span className="ci-price-val">{fmtPrice(total)}</span>
+          )}
+        </div>
+      )}
+      {p.priceType==='estimate' && (
+        <div style={{fontSize:11,color:'var(--orange)',marginTop:4,fontWeight:600}}>別途見積もり</div>
+      )}
+      {p.priceType==='included' && (
+        <div style={{fontSize:11,color:'var(--green)',marginTop:4,fontWeight:600}}>標準仕様内</div>
+      )}
+
+      <input className="ci-note-input" placeholder="備考・仕様詳細を入力..." value={sel.note} onChange={e=>onUpdate(sel.id,'note',e.target.value)}/>
+    </div>
+  );
+}
+
+function ProposalView({cart, customerName, customerLine, coordinator, date, totals}) {
+  if(cart.length === 0) {
+    return (
+      <div className="proposal-inner">
+        <div className="no-items-msg">
+          <div style={{fontSize:48,marginBottom:16}}>📋</div>
+          <div style={{fontSize:16,fontWeight:700,marginBottom:8}}>商品が選択されていません</div>
+          <div style={{color:'var(--muted)'}}>「商品選択」タブで商品を選択してください</div>
+        </div>
+      </div>
+    );
+  }
+
+  const facadeItems = cart.filter(s=>s.product.group==='facade');
+  const detailItems = cart.filter(s=>s.product.group==='detail');
+
+  const docNo = `GH-${date.replace(/-/g,'')}-${Math.random().toString(36).slice(2,6).toUpperCase()}`;
+
+  return (
+    <div className="proposal-inner">
+      {/* ヘッダー */}
+      <div className="prop-header">
+        <div>
+          <div className="prop-logo"><span>G</span> HOUSE</div>
+          <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>インテリアコーディネート 仕様書</div>
+        </div>
+        <div className="prop-meta">
+          <div className="doc-no">{docNo}</div>
+          <div style={{marginTop:4}}>作成日：{date}</div>
+          {coordinator && <div>担当：{coordinator}</div>}
+          <div style={{marginTop:4,fontSize:10}}>※すべて税抜価格</div>
+        </div>
+      </div>
+
+      {/* お客様情報 */}
+      <div className="prop-customer">
+        <h3>お客様</h3>
+        <div className="name">{customerName || '（お客様名未入力）'} 様</div>
+        {customerLine && <div className="sub">商品ライン：{customerLine}</div>}
+      </div>
+
+      {/* 外部（FACADE） */}
+      {facadeItems.length > 0 && (
+        <div className="prop-section">
+          <div className="prop-section-title">
+            <span className="badge facade">FACADE</span>
+            外部仕様
+          </div>
+          <table className="prop-table">
+            <thead>
+              <tr>
+                <th style={{width:'5%'}}>No.</th>
+                <th style={{width:'30%'}}>商品名</th>
+                <th style={{width:'12%'}}>メーカー</th>
+                <th style={{width:'12%'}}>カラー・仕様</th>
+                <th style={{width:'8%'}}>数量</th>
+                <th style={{width:'10%'}}>単価</th>
+                <th style={{width:'10%'}}>金額</th>
+                <th style={{width:'13%'}}>備考</th>
+              </tr>
+            </thead>
+            <tbody>
+              {facadeItems.map((sel, i) => <ProposalRow key={sel.id} sel={sel} no={i+1}/>)}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* 内部（DETAIL） */}
+      {detailItems.length > 0 && (
+        <div className="prop-section">
+          <div className="prop-section-title">
+            <span className="badge detail">DETAIL</span>
+            内部仕様
+          </div>
+          <table className="prop-table">
+            <thead>
+              <tr>
+                <th style={{width:'5%'}}>No.</th>
+                <th style={{width:'30%'}}>商品名</th>
+                <th style={{width:'12%'}}>メーカー</th>
+                <th style={{width:'12%'}}>カラー・仕様</th>
+                <th style={{width:'8%'}}>数量</th>
+                <th style={{width:'10%'}}>単価</th>
+                <th style={{width:'10%'}}>金額</th>
+                <th style={{width:'13%'}}>備考</th>
+              </tr>
+            </thead>
+            <tbody>
+              {detailItems.map((sel, i) => <ProposalRow key={sel.id} sel={sel} no={i+1}/>)}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* 合計 */}
+      <div className="prop-total">
+        <div className="prop-total-row">
+          <span>オプション合計（税抜）</span>
+          <span style={{fontWeight:700}}>{totals.priceable > 0 ? fmtPrice(totals.subtotal) : '-'}</span>
+        </div>
+        <div className="prop-total-row" style={{fontSize:12,color:'var(--muted)'}}>
+          <span>消費税（10%）</span>
+          <span>{totals.priceable > 0 ? fmtPrice(Math.round(totals.subtotal * 0.1)) : '-'}</span>
+        </div>
+        <div className="prop-total-row grand">
+          <span>合計（税込）</span>
+          <span style={{color:'var(--blue)'}}>{totals.priceable > 0 ? fmtPrice(Math.round(totals.subtotal * 1.1)) : '別途見積もり'}</span>
+        </div>
+        <div style={{fontSize:10,color:'var(--muted)',marginTop:8}}>
+          ※標準仕様内の商品・見積品は上記金額に含まれておりません
+        </div>
+      </div>
+
+      {/* 署名欄 */}
+      <div className="prop-sign">
+        <div className="prop-sign-box">お客様ご確認</div>
+        <div className="prop-sign-box">コーディネータ</div>
+        <div className="prop-sign-box">店長/責任者</div>
+      </div>
+
+      {/* フッター */}
+      <div className="prop-footer">
+        <div>G HOUSE コーディネートシステム ／ 本書面は税抜価格を記載しています。価格は予告なく変更される場合があります。</div>
+      </div>
+    </div>
+  );
+}
+
+function ProposalRow({sel, no}) {
+  const p = sel.product;
+  const priceDisplay = sel.customPrice !== null ? sel.customPrice : p.price;
+  const total = priceDisplay && sel.qty ? priceDisplay * (parseFloat(sel.qty)||1) : null;
+
+  return (
+    <tr>
+      <td>{no}</td>
+      <td className="td-name">
+        {p.name}
+        <div className="td-sub">{p.catName}</div>
+      </td>
+      <td>{p.maker}</td>
+      <td>{sel.selectedColor || '-'}</td>
+      <td style={{textAlign:'right'}}>
+        {sel.qty ? `${parseFloat(sel.qty).toLocaleString('ja-JP')} ${sel.unit||p.unit}` : '-'}
+      </td>
+      <td className="td-price">
+        {p.priceType==='included' ? <span style={{color:'var(--green)',fontWeight:700}}>標準内</span>
+          : p.priceType==='estimate' ? <span style={{color:'var(--orange)'}}>見積</span>
+          : priceDisplay ? fmtPrice(priceDisplay)
+          : '-'}
+      </td>
+      <td className="td-price">
+        {p.priceType==='included' ? '-'
+          : p.priceType==='estimate' ? '要見積'
+          : total ? fmtPrice(total) : '-'}
+      </td>
+      <td style={{fontSize:11,color:'var(--muted)'}}>{sel.note || p.note || '-'}</td>
+    </tr>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
