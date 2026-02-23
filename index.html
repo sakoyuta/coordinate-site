@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>G HOUSE コーディネートシステム</title>
+<title>コーディネートシステム</title>
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -80,12 +80,11 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .pc-price{font-size:13px;font-weight:700;color:var(--navy);margin:6px 0}
 .pc-price .unit{font-size:11px;font-weight:400;color:var(--muted)}
 .pc-note{font-size:11px;color:var(--muted);border-left:2px solid var(--gold);padding-left:6px;margin-top:4px}
-.pc-lines{display:flex;gap:3px;flex-wrap:wrap;margin-top:6px}
 .pl{font-size:10px;padding:1px 6px;border-radius:6px;font-weight:600}
-.pl.lacie{background:#e8e0f0;color:#6c3fa0}
-.pl.hours{background:#e0ecf7;color:#2471a3}
-.pl.lifeplus{background:#e8f5e9;color:#2e7d32}
-.pl.life{background:#fce4ec;color:#c62828}
+
+
+
+
 .add-btn{position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;font-weight:700;line-height:1}
 .add-btn:hover{background:#2980b9;transform:scale(1.1)}
 .add-btn.in-cart{background:var(--green)}
@@ -182,9 +181,9 @@ const PRODUCTS = [
   {id:'f002',cat:'gaiheki',catName:'外壁（サイディング）',group:'facade',name:'OP サイディング各種',maker:'各社メーカー',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:4500,unit:'㎡',priceText:'¥4,500/㎡',note:'標準外カラー・デザインのサイディング'},
   {id:'f003',cat:'gaiheki',catName:'外壁（サイディング）',group:'facade',name:'アルテミュール（木目調）',maker:'IG工業',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:4500,unit:'㎡',priceText:'¥4,500/㎡',colors:['レッドシダーナチュラルGC','レッドシダーエイジングGC','オークナチュラルGC','オークヴィンテージGC','ウォルナットナチュラルGC','ウォルナットダークGC']},
   // 外壁（金属サイディング）
-  {id:'f011',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'SPビレクト（標準）',maker:'IG工業',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡',colors:['Fネオホワイト','Fモスグリーン','Fマットブラック'],note:'LACIE:全面標準、HOURS:アクセント面のみ標準'},
+  {id:'f011',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'SPビレクト（標準）',maker:'IG工業',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡',colors:['Fネオホワイト','Fモスグリーン','Fマットブラック']},
   {id:'f012',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'SPビレクト（OP）',maker:'IG工業',tags:['op'],lines:['lacie','hours'],priceType:'perUnit',price:9500,unit:'㎡',priceText:'¥9,500/㎡',colors:['Fネオホワイト','Fモスグリーン','Fマットブラック']},
-  {id:'f013',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'ガルスパン（標準）',maker:'IG工業',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡',note:'LACIE:全面標準、HOURS:アクセント面のみ標準'},
+  {id:'f013',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'ガルスパン（標準）',maker:'IG工業',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:5000,unit:'㎡',priceText:'¥5,000/㎡'},
   {id:'f014',cat:'gaiheki-kinzoku',catName:'外壁（金属サイディング）',group:'facade',name:'ガルスパン（OP）',maker:'IG工業',tags:['op'],lines:['lacie','hours'],priceType:'perUnit',price:9500,unit:'㎡',priceText:'¥9,500/㎡'},
   // 外壁（塗り壁）
   {id:'f021',cat:'gaiheki-nuri',catName:'外壁（塗り壁）',group:'facade',name:'エンシェントブリック（標準）',maker:'ジョリパットネオ∞ JQ-620',tags:['std'],lines:['lacie','hours'],priceType:'perUnit',price:8000,unit:'㎡',priceText:'¥8,000/㎡'},
@@ -223,11 +222,11 @@ const PRODUCTS = [
   {id:'f085',cat:'mado330',catName:'窓 APW330',group:'facade',name:'電動シャッター変更',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:60000,unit:'カ所',priceText:'¥60,000/カ所'},
   {id:'f086',cat:'mado330',catName:'窓 APW330',group:'facade',name:'安全合わせガラス',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:100000,unit:'カ所',priceText:'¥100,000/カ所'},
   // 窓 APW430
-  {id:'f091',cat:'mado430',catName:'窓 APW430',group:'facade',name:'APW430（LACIE/HOURS標準）',maker:'YKKAP',tags:['std'],lines:['lacie','hours'],priceType:'included',price:null,unit:'',priceText:'標準内（LACIE/HOURS）',note:'トリプルガラス'},
-  {id:'f092',cat:'mado430',catName:'窓 APW430',group:'facade',name:'APW430（LIFE+/LIFE OP）',maker:'YKKAP',tags:['op'],lines:['lifeplus','life'],priceType:'perUnit',price:20000,unit:'坪',priceText:'¥20,000×施工坪数/式',note:'LIFE+/LIFEはオプション'},
+  {id:'f091',cat:'mado430',catName:'窓 APW430',group:'facade',name:'APW430（標準）',maker:'YKKAP',tags:['std'],lines:['lacie','hours'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'トリプルガラス'},
+  {id:'f092',cat:'mado430',catName:'窓 APW430',group:'facade',name:'APW430（OP）',maker:'YKKAP',tags:['op'],lines:['lifeplus','life'],priceType:'perUnit',price:20000,unit:'坪',priceText:'¥20,000×施工坪数/式'},
   // 玄関ドア
-  {id:'f101',cat:'genkan-door',catName:'玄関ドア',group:'facade',name:'ヴェナートD30（LACIE/HOURS/LIFE+標準）',maker:'YKKAP',tags:['std'],lines:['lacie','hours','lifeplus'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'100V電気錠、ポケットキー付'},
-  {id:'f102',cat:'genkan-door',catName:'玄関ドア',group:'facade',name:'ヴェナートD30（LIFE OP）',maker:'YKKAP',tags:['op'],lines:['life'],priceType:'fixed',price:75000,unit:'カ所',priceText:'¥75,000/カ所'},
+  {id:'f101',cat:'genkan-door',catName:'玄関ドア',group:'facade',name:'ヴェナートD30（標準）',maker:'YKKAP',tags:['std'],lines:['lacie','hours','lifeplus'],priceType:'included',price:null,unit:'',priceText:'標準内',note:'100V電気錠、ポケットキー付'},
+  {id:'f102',cat:'genkan-door',catName:'玄関ドア',group:'facade',name:'ヴェナートD30（OP）',maker:'YKKAP',tags:['op'],lines:['life'],priceType:'fixed',price:75000,unit:'カ所',priceText:'¥75,000/カ所'},
   {id:'f103',cat:'genkan-door',catName:'玄関ドア',group:'facade',name:'顔認証キー',maker:'YKKAP',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:200000,unit:'式',priceText:'¥200,000/式（非防火のみ）'},
   // 外部設備
   {id:'f111',cat:'gaibu-setsubi',catName:'外部設備',group:'facade',name:'外部コンセント（追加）',maker:'電気設備',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:12000,unit:'カ所',priceText:'¥12,000/カ所',note:'1カ所標準'},
@@ -255,9 +254,9 @@ const PRODUCTS = [
 
   // ---- DETAIL ----
   // ダイニングテーブル
-  {id:'d001',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'Gハウスオリジナル スクエア（ブラック/ホワイト）',maker:'Gハウスオリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:130000,unit:'台',priceText:'¥130,000〜',note:'W1500・1650・1800、天板17色、脚4種、コンセント2口付'},
-  {id:'d002',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'Gハウスオリジナル ラウンド（クワトロ）',maker:'Gハウスオリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:120000,unit:'台',priceText:'¥120,000〜',note:'W1100・1200、天板17色、脚4種'},
-  {id:'d003',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'Gハウスオリジナル ラウンド（オクタ）',maker:'Gハウスオリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:166000,unit:'台',priceText:'¥166,000〜'},
+  {id:'d001',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'オリジナル スクエア（ブラック/ホワイト）',maker:'オリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:130000,unit:'台',priceText:'¥130,000〜',note:'W1500・1650・1800、天板17色、脚4種、コンセント2口付'},
+  {id:'d002',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'オリジナル ラウンド（クワトロ）',maker:'オリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:120000,unit:'台',priceText:'¥120,000〜',note:'W1100・1200、天板17色、脚4種'},
+  {id:'d003',cat:'dining',catName:'ダイニングテーブル',group:'detail',name:'オリジナル ラウンド（オクタ）',maker:'オリジナル',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:166000,unit:'台',priceText:'¥166,000〜'},
   // 天井変更
   {id:'d011',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'天井高UP（H2600迄）',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:10000,unit:'㎡',priceText:'¥10,000/㎡',note:'天井変更する範囲の床坪数にて算出'},
   {id:'d012',cat:'tenjou',catName:'天井変更工事',group:'detail',name:'勾配天井工事',maker:'工事',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'perUnit',price:10000,unit:'㎡',priceText:'¥10,000/㎡'},
@@ -485,12 +484,10 @@ function calcItemTotal(sel) {
 function App() {
   const [tab, setTab] = useState('select');
   const [activeCat, setActiveCat] = useState('all');
-  const [lineFilter, setLineFilter] = useState('all');
   const [tagFilter, setTagFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
   const [customerName, setCustomerName] = useState('');
-  const [customerLine, setCustomerLine] = useState('');
   const [customerDate, setCustomerDate] = useState(new Date().toISOString().slice(0,10));
   const [coordinator, setCoordinator] = useState('');
 
@@ -499,7 +496,6 @@ function App() {
   const filtered = useMemo(() => {
     return PRODUCTS.filter(p => {
       if(activeCat !== 'all' && p.cat !== activeCat) return false;
-      if(lineFilter !== 'all' && !p.lines.includes(lineFilter)) return false;
       if(tagFilter !== 'all' && !p.tags.includes(tagFilter)) return false;
       if(search) {
         const q = search.toLowerCase();
@@ -507,7 +503,7 @@ function App() {
       }
       return true;
     });
-  }, [activeCat, lineFilter, tagFilter, search]);
+  }, [activeCat, tagFilter, search]);
 
   const grouped = useMemo(() => {
     const g = {};
@@ -565,7 +561,7 @@ function App() {
     <div className="app">
       {/* HEADER */}
       <header className="header no-print">
-        <div className="header-logo"><span>G HOUSE</span> COORDINATE</div>
+        <div className="header-logo">コーディネートシステム</div>
         <div className="header-tabs">
           <button className={`tab-btn${tab==='select'?' active':''}`} onClick={()=>setTab('select')}>📋 商品選択</button>
           <button className={`tab-btn${tab==='proposal'?' active':''}`} onClick={()=>setTab('proposal')}>📄 仕様書・提案書</button>
@@ -574,14 +570,7 @@ function App() {
           <input className="header-input" placeholder="お客様名" value={customerName} onChange={e=>setCustomerName(e.target.value)}/>
           <input className="header-input" placeholder="担当コーディネータ" value={coordinator} onChange={e=>setCoordinator(e.target.value)} style={{width:140}}/>
           <input type="date" className="header-select" value={customerDate} onChange={e=>setCustomerDate(e.target.value)}/>
-          <div className="header-line-filter">
-            {['all','lacie','hours','lifeplus','life'].map(l=>(
-              <button key={l} className={`lf-btn${lineFilter===l?' active':''}`} onClick={()=>setLineFilter(l)}>
-                {l==='all'?'ALL':l==='lifeplus'?'LIFE+':l.toUpperCase()}
-              </button>
-            ))}
           </div>
-        </div>
       </header>
 
       {/* SELECT TAB */}
@@ -635,7 +624,7 @@ function App() {
                   </div>
                   <div className="product-grid">
                     {items.map(p => (
-                      <ProductCard key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart} lineFilter={lineFilter}/>
+                      <ProductCard key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart}/>
                     ))}
                   </div>
                 </div>
@@ -665,7 +654,6 @@ function App() {
           <ProposalView
             cart={cart}
             customerName={customerName}
-            customerLine={lineFilter !== 'all' ? (lineFilter==='lifeplus'?'LIFE+':lineFilter.toUpperCase()) : customerLine}
             coordinator={coordinator}
             date={customerDate}
             totals={totals}
@@ -676,7 +664,7 @@ function App() {
   );
 }
 
-function ProductCard({product, inCart, onAdd, lineFilter}) {
+function ProductCard({product, inCart, onAdd}) {
   const p = product;
   return (
     <div className={`product-card${inCart?' selected':''}`}>
@@ -702,13 +690,6 @@ function ProductCard({product, inCart, onAdd, lineFilter}) {
         </div>
       )}
       {p.note && <div className="pc-note">{p.note}</div>}
-      <div className="pc-lines">
-        {p.lines.map(l=>(
-          <span key={l} className={`pl ${l}`}>
-            {l==='lifeplus'?'LIFE+':l.toUpperCase()}
-          </span>
-        ))}
-      </div>
     </div>
   );
 }
@@ -815,7 +796,7 @@ function CartItem({sel, onRemove, onUpdate}) {
   );
 }
 
-function ProposalView({cart, customerName, customerLine, coordinator, date, totals}) {
+function ProposalView({cart, customerName, coordinator, date, totals}) {
   if(cart.length === 0) {
     return (
       <div className="proposal-inner">
@@ -838,7 +819,7 @@ function ProposalView({cart, customerName, customerLine, coordinator, date, tota
       {/* ヘッダー */}
       <div className="prop-header">
         <div>
-          <div className="prop-logo"><span>G</span> HOUSE</div>
+          <div className="prop-logo">コーディネートシステム</div>
           <div style={{fontSize:11,color:'var(--muted)',marginTop:4}}>インテリアコーディネート 仕様書</div>
         </div>
         <div className="prop-meta">
@@ -853,7 +834,6 @@ function ProposalView({cart, customerName, customerLine, coordinator, date, tota
       <div className="prop-customer">
         <h3>お客様</h3>
         <div className="name">{customerName || '（お客様名未入力）'} 様</div>
-        {customerLine && <div className="sub">商品ライン：{customerLine}</div>}
       </div>
 
       {/* 外部（FACADE） */}
@@ -938,7 +918,7 @@ function ProposalView({cart, customerName, customerLine, coordinator, date, tota
 
       {/* フッター */}
       <div className="prop-footer">
-        <div>G HOUSE コーディネートシステム ／ 本書面は税抜価格を記載しています。価格は予告なく変更される場合があります。</div>
+        <div>本書面は税抜価格を記載しています。価格は予告なく変更される場合があります。</div>
       </div>
     </div>
   );
