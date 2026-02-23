@@ -288,11 +288,36 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .icon-del:hover{color:var(--red)}
 .pw-change{margin-top:14px;padding-top:14px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
 
+/* SPEC SHEET TAB */
+.spec-tab{flex:1;overflow-y:auto;padding:16px;background:#f0f2f5;display:flex;flex-direction:column;align-items:center}
+.spec-a3{width:277mm;background:#fff;padding:7mm 10mm;box-shadow:0 2px 16px rgba(0,0,0,.12);font-size:6.5pt;line-height:1.35;color:#000;margin-bottom:20px}
+.spec-hd{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #1a2332;margin-bottom:5px;padding-bottom:5px}
+.spec-hd-title{font-size:14pt;font-weight:700;color:#1a2332;letter-spacing:2px}
+.spec-hd-sub{font-size:6.5pt;color:#555;margin-top:1px}
+.spec-cols{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:4px}
+.spec-col{}
+.spec-sec{margin-bottom:5px;break-inside:avoid}
+.spec-sec-h{background:#1a2332;color:#fff;font-size:6pt;font-weight:700;padding:2px 6px;letter-spacing:.5px}
+.spec-sec-h.facade{background:#2471d4}
+.spec-sec-h.detail{background:#c8a45c;color:#1a2332}
+.spec-tbl{width:100%;border-collapse:collapse;font-size:6pt}
+.spec-tbl th,.spec-tbl td{border:0.5px solid #bbb;padding:1.5px 4px;vertical-align:middle}
+.spec-tbl th.spec-row-label{background:#f0f2f5;font-weight:700;white-space:nowrap;width:54px;min-width:54px;font-size:5.5pt;color:#333;text-align:left}
+.spec-tbl td{min-height:12px}
+.spec-tbl td.filled{color:#1a2332;font-weight:600}
+.spec-note-box{border:0.5px solid #bbb;padding:3px 6px;font-size:5.5pt;line-height:1.6;margin-top:4px}
+.spec-note-title{font-weight:700;margin-bottom:1px}
+.spec-empty{color:#aaa;font-style:italic}
+.spec-sign{display:flex;justify-content:flex-end;gap:16px;margin-top:5px}
+.spec-sign-box{border-top:0.5px solid #999;width:110px;text-align:center;padding-top:2px;font-size:5.5pt;color:#888}
+
 @media print{
   .no-print{display:none!important}
   .proposal-inner{box-shadow:none;padding:20px}
   body{background:#fff}
   .proposal{background:#fff}
+  .spec-a3{box-shadow:none;padding:5mm 7mm;width:100%}
+  @page{size:A3 portrait;margin:5mm}
 }
 </style>
 </head>
@@ -791,7 +816,8 @@ function App() {
         <div className="header-tabs">
           <button className={`tab-btn${tab==='customers'?' active':''}`} onClick={()=>setTab('customers')}>👥 お客様リスト</button>
           <button className={`tab-btn${tab==='select'?' active':''}`} onClick={()=>setTab('select')}>📋 商品選択</button>
-          <button className={`tab-btn${tab==='proposal'?' active':''}`} onClick={()=>setTab('proposal')}>📄 仕様書・提案書</button>
+          <button className={`tab-btn${tab==='proposal'?' active':''}`} onClick={()=>setTab('proposal')}>📄 オプション金額リスト</button>
+          <button className={`tab-btn${tab==='spec'?' active':''}`} onClick={()=>setTab('spec')}>📝 仕様書</button>
           {isAdmin && <button className={`tab-btn${tab==='admin'?' active':''}`} onClick={()=>setTab('admin')}>⚙️ 商品管理</button>}
         </div>
         <div className="header-customer">
@@ -914,6 +940,7 @@ function App() {
             onUpdate={updateSel}
             onClear={()=>setCart([])}
             onProposal={()=>setTab('proposal')}
+            onSpec={()=>setTab('spec')}
           />
         </div>
       )}
@@ -924,6 +951,7 @@ function App() {
           <div className="no-print" style={{maxWidth:800,margin:'0 auto 16px',display:'flex',gap:10,alignItems:'center'}}>
             <button className="print-btn" onClick={()=>window.print()}>🖨 印刷 / PDF保存</button>
             <button onClick={()=>setTab('select')} style={{padding:'8px 16px',border:'1px solid var(--border)',borderRadius:6,background:'#fff',cursor:'pointer',fontSize:12}}>← 選択画面に戻る</button>
+            <button onClick={()=>setTab('spec')} style={{padding:'8px 16px',border:'1px solid var(--border)',borderRadius:6,background:'#fff',cursor:'pointer',fontSize:12}}>📝 仕様書へ →</button>
           </div>
           <ProposalView
             cart={cart}
@@ -935,6 +963,15 @@ function App() {
             totals={totals}
           />
         </div>
+      )}
+
+      {/* SPEC SHEET TAB */}
+      {tab === 'spec' && (
+        <SpecSheet
+          cart={cart}
+          activeCustomer={activeCustomer}
+          customerDate={customerDate}
+        />
       )}
     </div>
   );
@@ -1383,7 +1420,7 @@ function ProductCard({product, inCart, onAdd}) {
   );
 }
 
-function CartPanel({cart, totals, onRemove, onUpdate, onClear, onProposal}) {
+function CartPanel({cart, totals, onRemove, onUpdate, onClear, onProposal, onSpec}) {
   return (
     <aside className="cart no-print">
       <div className="cart-header">
@@ -1422,7 +1459,8 @@ function CartPanel({cart, totals, onRemove, onUpdate, onClear, onProposal}) {
             <div style={{fontSize:10,color:'var(--muted)',marginTop:4}}>※標準品・見積品は含まず</div>
           </>
         )}
-        <button className="proposal-btn" onClick={onProposal}>📄 仕様書・提案書を作成</button>
+        <button className="proposal-btn" onClick={onProposal}>📄 オプション金額リストを作成</button>
+        <button className="proposal-btn" onClick={onSpec} style={{marginTop:4,background:'#2471d4'}}>📝 仕様書を作成</button>
         {cart.length > 0 && (
           <button className="clear-btn" onClick={onClear}>選択をすべてクリア</button>
         )}
@@ -1722,6 +1760,363 @@ function ProposalRow({sel, no}) {
       </td>
       <td style={{fontSize:11,color:'var(--muted)'}}>{sel.note || p.note || '-'}</td>
     </tr>
+  );
+}
+
+// ===== SPEC SHEET =====
+function SpecSheet({cart, activeCustomer, customerDate}) {
+  const custName = activeCustomer
+    ? activeCustomer.name1 + (activeCustomer.name2 ? ` / ${activeCustomer.name2}` : '')
+    : '';
+
+  // Organize cart by category
+  const bycat = React.useMemo(() => {
+    const m = {};
+    cart.forEach(sel => {
+      if(!m[sel.product.cat]) m[sel.product.cat] = [];
+      m[sel.product.cat].push(sel);
+    });
+    return m;
+  }, [cart]);
+
+  const g = (...cats) => cats.flatMap(c => bycat[c] || []);
+
+  // Extract display info from a cart item
+  const si = (sel) => {
+    const p = sel.product;
+    const colors = (sel.selectedColors || []).join('・');
+    const models = (sel.selectedModels || []).join('・');
+    return { name: p.name, maker: p.maker, colors, models, note: sel.note, priceText: p.priceText };
+  };
+
+  // Renders one or more rows for a labeled group of cart items
+  const GRows = ({label, items, def='-'}) => {
+    if (!items || items.length === 0) {
+      return <tr><th className="spec-row-label">{label}</th><td colSpan={2}><span className="spec-empty">{def}</span></td></tr>;
+    }
+    return items.map((sel, i) => {
+      const {name, maker, colors, models, note} = si(sel);
+      return (
+        <tr key={sel.id}>
+          {i === 0 && <th className="spec-row-label" rowSpan={items.length}>{label}</th>}
+          <td className="filled">{name}</td>
+          <td>{colors || models || note || maker}</td>
+        </tr>
+      );
+    });
+  };
+
+  const gaihekiItems = g('gaiheki','gaiheki-kinzoku','gaiheki-nuri','gaiheki-solido');
+  const madoItems    = g('mado330','mado430');
+  const genkanItems  = g('genkan-door');
+  const garageItems  = g('garage');
+  const yaneItems    = g('yane');
+  const hisashiItems = g('hisashi');
+  const porchItems   = g('porch');
+  const ecocuteItems = g('ecocute');
+  const gaibusetsubi = g('gaibu-setsubi');
+  const yukaItems    = g('yuka');
+  const kabeItems    = g('cross','tile-naisou','accent-panel','accent-tile');
+  const tenjouItems  = g('tenjou');
+  const doorItems    = g('door');
+  const kutsubako    = g('kutsubako','genkan-kamachi');
+  const kaidan       = g('kaidan');
+  const niche        = g('niche');
+  const tatami       = g('tatami');
+  const shunou       = g('shunou','toilet-shunou');
+
+  const yaneRoofItems = yaneItems.filter(s => s.product.name.includes('屋根'));
+  const yaneFuItems   = yaneItems.filter(s => s.product.name.includes('破風'));
+  const yaneNokiItems = yaneItems.filter(s => s.product.name.includes('軒天'));
+  const yaneYokiItems = yaneItems.filter(s => s.product.name.includes('横樋') || s.product.name.includes('ファインスケア'));
+  const yaneTateItems = yaneItems.filter(s => s.product.name.includes('縦樋') || s.product.name.includes('S30'));
+
+  const ecoKyuItems  = ecocuteItems.filter(s => s.product.name.includes('エコキュート') || s.product.name.includes('ナイアガラ') || s.product.name.includes('おひさま'));
+  const ecoKanItems  = ecocuteItems.filter(s => s.product.name.includes('換気'));
+  const ecoSolarItems= ecocuteItems.filter(s => s.product.name.includes('太陽光') || s.product.name.includes('蓄電'));
+
+  const gaibWater    = gaibusetsubi.filter(s => s.product.name.includes('水栓'));
+  const gaibCons     = gaibusetsubi.filter(s => s.product.name.includes('コンセント') || s.product.name.includes('EV'));
+  const gaibAnt      = gaibusetsubi.filter(s => s.product.name.includes('アンテナ'));
+  const gaibOther    = gaibusetsubi.filter(s => !s.product.name.includes('水栓') && !s.product.name.includes('コンセント') && !s.product.name.includes('EV') && !s.product.name.includes('アンテナ'));
+
+  const hasDetail = yukaItems.length + kabeItems.length + tenjouItems.length + doorItems.length + kutsubako.length + kaidan.length + niche.length + tatami.length + shunou.length > 0;
+
+  return (
+    <div className="spec-tab">
+      <div className="no-print" style={{marginBottom:12,display:'flex',gap:8,alignItems:'center'}}>
+        <button className="print-btn" onClick={()=>window.print()}>🖨️ A3印刷 / PDF保存</button>
+        <span style={{fontSize:11,color:'var(--muted)'}}>印刷設定：A3 縦・余白最小で印刷してください</span>
+      </div>
+
+      <div className="spec-a3">
+        {/* ── HEADER ── */}
+        <div className="spec-hd">
+          <div>
+            <div className="spec-hd-title">仕　様　書</div>
+            <div className="spec-hd-sub">新築工事</div>
+          </div>
+          <div style={{flex:1,margin:'0 10px'}}>
+            <table style={{width:'100%',borderCollapse:'collapse',fontSize:'6.5pt'}}>
+              <tbody>
+                <tr>
+                  <th style={{background:'#f0f2f5',border:'0.5px solid #bbb',padding:'2px 6px',width:52,fontWeight:700}}>物件名</th>
+                  <td style={{border:'0.5px solid #bbb',padding:'2px 6px',fontWeight:700,fontSize:'7.5pt'}}>{activeCustomer?.property || ''}</td>
+                  <th style={{background:'#f0f2f5',border:'0.5px solid #bbb',padding:'2px 6px',width:44,fontWeight:700}}>作成日</th>
+                  <td style={{border:'0.5px solid #bbb',padding:'2px 6px',width:80}}>{customerDate}</td>
+                </tr>
+                <tr>
+                  <th style={{background:'#f0f2f5',border:'0.5px solid #bbb',padding:'2px 6px',fontWeight:700}}>お客様</th>
+                  <td style={{border:'0.5px solid #bbb',padding:'2px 6px',fontWeight:700,fontSize:'7.5pt'}}>{custName || ''}</td>
+                  <th style={{background:'#f0f2f5',border:'0.5px solid #bbb',padding:'2px 6px',fontWeight:700}}>担当</th>
+                  <td style={{border:'0.5px solid #bbb',padding:'2px 6px'}}>{activeCustomer?.coordinator || ''}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* ── 2-COLUMN MAIN ── */}
+        <div className="spec-cols">
+
+          {/* ===== LEFT COLUMN ===== */}
+          <div className="spec-col">
+
+            {/* 建物構造 */}
+            <div className="spec-sec">
+              <div className="spec-sec-h">建　物　構　造</div>
+              <table className="spec-tbl">
+                <tbody>
+                  <tr>
+                    <th className="spec-row-label" rowSpan={8} style={{verticalAlign:'middle',textAlign:'center',background:'#e8ecf2',writingMode:'vertical-rl',width:16,fontSize:'5pt'}}>躯　体</th>
+                    <th className="spec-row-label">土台</th>
+                    <td>構造用集成材 105×105</td>
+                  </tr>
+                  <tr><th className="spec-row-label">梁・桁・母屋</th><td>構造用集成材</td></tr>
+                  <tr><th className="spec-row-label">棟木・小屋束</th><td>構造用集成材</td></tr>
+                  <tr><th className="spec-row-label">床</th><td>構造用合板 t=24</td></tr>
+                  <tr><th className="spec-row-label">大壁管柱</th><td>構造用集成材 105×105</td></tr>
+                  <tr><th className="spec-row-label">通柱</th><td>構造用集成材</td></tr>
+                  <tr><th className="spec-row-label">間柱</th><td>30×105 @455 / 45×105 @910</td></tr>
+                  <tr><th className="spec-row-label">外壁面材</th><td>構造用面材 t=9</td></tr>
+                  <tr>
+                    <th className="spec-row-label" rowSpan={2} style={{verticalAlign:'middle',textAlign:'center',background:'#e8ecf2',writingMode:'vertical-rl',fontSize:'5pt'}}>野地</th>
+                    <th className="spec-row-label">垂木</th>
+                    <td>米松KD 45×75</td>
+                  </tr>
+                  <tr><th className="spec-row-label">野地板</th><td>針葉樹合板 t=12</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* 断熱 */}
+            <div className="spec-sec">
+              <div className="spec-sec-h">断　　　熱</div>
+              <table className="spec-tbl">
+                <tbody>
+                  <tr>
+                    <th className="spec-row-label" rowSpan={7} style={{verticalAlign:'middle',textAlign:'center',background:'#e8ecf2',writingMode:'vertical-rl',width:16,fontSize:'5pt'}}>断熱材</th>
+                    <th className="spec-row-label">1階床</th>
+                    <td>押出法ポリスチレンフォーム 3種 t100 + 防湿気密シート t0.2</td>
+                  </tr>
+                  <tr><th className="spec-row-label">外壁</th><td>吹付硬質ウレタンフォーム（A種3）t95 + 防湿気密シート t0.2</td></tr>
+                  <tr><th className="spec-row-label">屋根</th><td>吹付硬質ウレタンフォーム（A種3）t225 + 防湿気密シート t0.2</td></tr>
+                  <tr><th className="spec-row-label">外気接触天井</th><td>吹付硬質ウレタンフォーム（A種3）t225 + 防湿気密シート t0.2</td></tr>
+                  <tr><th className="spec-row-label">外気接触床</th><td>フェノールフォーム断熱材 1種2号 t170 + 防湿気密シート t0.2</td></tr>
+                  <tr><th className="spec-row-label">基礎立ち上がり</th><td>押出法ポリスチレンフォーム 1種 t50</td></tr>
+                  <tr><th className="spec-row-label">天井吊木</th><td>防震吊木（上階に床がある部分）</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* 基礎 */}
+            <div className="spec-sec">
+              <div className="spec-sec-h">基　　　礎</div>
+              <table className="spec-tbl">
+                <tbody>
+                  <tr><th className="spec-row-label">基礎形式</th><td colSpan={2}>べた基礎（床下断熱・セパ分裂工法）</td></tr>
+                  <tr><th className="spec-row-label">基礎巾木</th><td colSpan={2}>立上りモルタル塗（刷毛引き仕上）</td></tr>
+                  <tr><th className="spec-row-label">土台水切</th><td colSpan={2}>ガルバリウム鋼板</td></tr>
+                  <tr><th className="spec-row-label">基礎パッキン</th><td colSpan={2}>JOTOテクノーング t=20 通気パッキンロング</td></tr>
+                  <tr><th className="spec-row-label">防蟻防腐工事</th><td colSpan={2}>エコボロンPRO（地面から1mの範囲に塗布）</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* 屋根・軒天・雨樋 */}
+            <div className="spec-sec">
+              <div className="spec-sec-h facade">屋根・軒天・雨樋</div>
+              <table className="spec-tbl">
+                <tbody>
+                  <GRows label="屋根材" items={yaneRoofItems} def="日鉄鋼板 ニスクカラーSGL"/>
+                  <GRows label="破風" items={yaneFuItems} def="EP塗装"/>
+                  <GRows label="軒天" items={yaneNokiItems} def="エンボス（神島化学）"/>
+                  <GRows label="横樋" items={yaneYokiItems} def="Panasonic ファインスケアNF-I型"/>
+                  <GRows label="縦樋" items={yaneTateItems} def="Panasonic シビルスケアS30"/>
+                </tbody>
+              </table>
+            </div>
+
+            {/* 庇 */}
+            <div className="spec-sec">
+              <div className="spec-sec-h facade">庇</div>
+              <table className="spec-tbl">
+                <tbody>
+                  <GRows label="庇" items={hisashiItems} def="-"/>
+                </tbody>
+              </table>
+            </div>
+
+            {/* ポーチ */}
+            <div className="spec-sec">
+              <div className="spec-sec-h facade">ポーチ</div>
+              <table className="spec-tbl">
+                <tbody>
+                  <GRows label="ポーチタイル" items={porchItems} def="-"/>
+                </tbody>
+              </table>
+            </div>
+
+          </div>
+
+          {/* ===== RIGHT COLUMN ===== */}
+          <div className="spec-col">
+
+            {/* 給排水・設備 */}
+            <div className="spec-sec">
+              <div className="spec-sec-h facade">給排水・設備</div>
+              <table className="spec-tbl">
+                <tbody>
+                  <GRows label="給湯器" items={ecoKyuItems} def="エコキュートSシリーズ（Panasonic）370L"/>
+                  <GRows label="換気システム" items={ecoKanItems} def="Panasonic 換気用サイクロン給気フード"/>
+                  <GRows label="太陽光・蓄電池" items={ecoSolarItems} def="-"/>
+                  <tr><th className="spec-row-label">分電盤</th><td colSpan={2}>感震ブレーカー付き</td></tr>
+                  <tr><th className="spec-row-label">インターホン</th><td colSpan={2}>Panasonic</td></tr>
+                  <tr><th className="spec-row-label">ナノバブル</th><td colSpan={2}>Beauty Aqua（オプション）</td></tr>
+                  <GRows label="外部水栓" items={gaibWater} def="散水栓/立水栓 1カ所標準"/>
+                  <GRows label="外部コンセント" items={gaibCons} def="防水コンセント 1カ所標準"/>
+                  <GRows label="TVアンテナ" items={gaibAnt} def="-"/>
+                  <GRows label="その他外部設備" items={gaibOther} def="-"/>
+                </tbody>
+              </table>
+            </div>
+
+            {/* 電気・スイッチ・コンセント */}
+            <div className="spec-sec">
+              <div className="spec-sec-h">電気・スイッチ・コンセント</div>
+              <table className="spec-tbl">
+                <tbody>
+                  <tr><th className="spec-row-label">配線器具</th><td colSpan={2}>Panasonic</td></tr>
+                  <tr><th className="spec-row-label">TEL配管</th><td colSpan={2}>入線無し・よび線有 1カ所</td></tr>
+                  <tr><th className="spec-row-label">LAN配管</th><td colSpan={2}>入線無し・よび線有 2カ所</td></tr>
+                  <tr><th className="spec-row-label">2口コンセント</th><td colSpan={2}>25カ所（直結除く）</td></tr>
+                  <tr><th className="spec-row-label">IH用200V</th><td colSpan={2}>1カ所</td></tr>
+                  <tr><th className="spec-row-label">エアコン用</th><td colSpan={2}>100V 4カ所 / 200V 1カ所</td></tr>
+                  <tr><th className="spec-row-label">アース付コンセント</th><td colSpan={2}>トイレ×2・洗濯機・冷蔵庫 4カ所</td></tr>
+                  <tr><th className="spec-row-label">TVコンセント</th><td colSpan={2}>2カ所</td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            {/* 外壁 */}
+            <div className="spec-sec">
+              <div className="spec-sec-h facade">外壁</div>
+              <table className="spec-tbl">
+                <tbody>
+                  {gaihekiItems.length > 0 ? (
+                    gaihekiItems.map((sel, i) => {
+                      const {name, maker, colors, models, note} = si(sel);
+                      const lbl = ['ベース','A','B','C','D'][i] || `${i+1}`;
+                      return (
+                        <tr key={sel.id}>
+                          <th className="spec-row-label">外壁（{lbl}）</th>
+                          <td className="filled">{name}</td>
+                          <td>{colors || models || note || maker}</td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr><th className="spec-row-label">外壁</th><td colSpan={2}><span className="spec-empty">選択なし</span></td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* 開口部 */}
+            <div className="spec-sec">
+              <div className="spec-sec-h facade">開口部（玄関ドア・窓・シャッター）</div>
+              <table className="spec-tbl">
+                <tbody>
+                  {genkanItems.length > 0 ? (
+                    genkanItems.map((sel, i) => {
+                      const {name, colors, models} = si(sel);
+                      return (
+                        <tr key={sel.id}>
+                          {i === 0 && <th className="spec-row-label" rowSpan={genkanItems.length}>玄関ドア</th>}
+                          <td className="filled">{name}</td>
+                          <td>{colors || models || ''}</td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr><th className="spec-row-label">玄関ドア</th><td colSpan={2}>YKK ヴェナートD30</td></tr>
+                  )}
+                  {madoItems.length > 0 ? (
+                    madoItems.map((sel, i) => {
+                      const {name, colors, models} = si(sel);
+                      return (
+                        <tr key={sel.id}>
+                          {i === 0 && <th className="spec-row-label" rowSpan={madoItems.length}>窓</th>}
+                          <td className="filled">{name}</td>
+                          <td>{colors || models || ''}</td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr><th className="spec-row-label">窓</th><td colSpan={2}>YKK APW330（樹脂サッシ・アルゴンガス・ペアガラス）</td></tr>
+                  )}
+                  <GRows label="ガレージ" items={garageItems} def="-"/>
+                </tbody>
+              </table>
+            </div>
+
+            {/* 内装 */}
+            {hasDetail && (
+              <div className="spec-sec">
+                <div className="spec-sec-h detail">内装</div>
+                <table className="spec-tbl">
+                  <tbody>
+                    <GRows label="床材" items={yukaItems} def="-"/>
+                    <GRows label="クロス・壁材" items={kabeItems} def="-"/>
+                    <GRows label="天井" items={tenjouItems} def="-"/>
+                    <GRows label="建具・ドア" items={doorItems} def="-"/>
+                    <GRows label="下駄箱" items={kutsubako} def="-"/>
+                    <GRows label="階段" items={kaidan} def="-"/>
+                    <GRows label="ニッチ" items={niche} def="-"/>
+                    <GRows label="畳" items={tatami} def="-"/>
+                    <GRows label="収納" items={shunou} def="-"/>
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+          </div>
+        </div>
+
+        {/* ── 注意事項 ── */}
+        <div className="spec-note-box">
+          <div className="spec-note-title">【注意事項】</div>
+          <div>①当社での造作工事は行いません（可動棚・枕棚・ハンガーパイプ・カウンター等カタログ記載分除く）　②廊下有効幅：750mm以上　③図面に記載の内容が構造上、施工不可と判断した場合、取付位置を変更する可能性があります。　④斜線制限や構造部材の大きさにより、階高・天井高が予定高さが確保できない場合があります。　⑤商品の大幅な納期遅延や制作不可の連絡があった場合、機能同等品を代替品としてご案内させていただく可能性がございます。</div>
+        </div>
+
+        {/* ── 署名欄 ── */}
+        <div className="spec-sign">
+          <div className="spec-sign-box">お客様ご確認</div>
+          <div className="spec-sign-box">コーディネータ</div>
+          <div className="spec-sign-box">店長/責任者</div>
+        </div>
+      </div>
+    </div>
   );
 }
 
