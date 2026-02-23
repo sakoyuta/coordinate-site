@@ -185,6 +185,61 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .print-btn{padding:8px 18px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:16px}
 .print-btn:hover{background:#243447}
 .no-items-msg{text-align:center;padding:60px;color:var(--muted)}
+/* CUSTOMER LIST TAB */
+.cust-tab{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
+.cust-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
+.cust-search{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff}
+.cust-search:focus{border-color:var(--blue)}
+.cust-new-btn{padding:8px 18px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s}
+.cust-new-btn:hover{background:#243447}
+.cust-count{font-size:12px;color:var(--muted);white-space:nowrap}
+.cust-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+.cust-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;transition:box-shadow .2s}
+.cust-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.09)}
+.cust-card.active-cust{border-color:var(--blue);background:#f0f5ff}
+.cust-card-names{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px;padding-right:30px}
+.cust-card-names .name2{font-size:13px;color:var(--muted);font-weight:400;margin-left:6px}
+.cust-card-prop{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px}
+.cust-card-prop .prop-icon{opacity:.6}
+.cust-card-meta{display:flex;gap:10px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+.cust-card-actions{display:flex;gap:6px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
+.ca-btn{flex:1;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
+.ca-btn.select{background:var(--navy);color:#fff;border-color:var(--navy)}
+.ca-btn.select:hover{background:#243447}
+.ca-btn.edit:hover{background:#f0f2f5}
+.ca-btn.delete{color:var(--red)}
+.ca-btn.delete:hover{background:#fde8e8;border-color:var(--red)}
+.cust-active-badge{position:absolute;top:10px;right:10px;background:var(--blue);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px}
+.cust-empty{text-align:center;padding:80px 20px;color:var(--muted)}
+.cust-empty .icon{font-size:52px;margin-bottom:14px;opacity:.35}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal{background:#fff;border-radius:12px;padding:28px;width:100%;max-width:480px;box-shadow:0 8px 32px rgba(0,0,0,.18);animation:fadeUp .15s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.modal-title{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:20px;display:flex;align-items:center;gap:8px}
+.form-group{margin-bottom:14px}
+.form-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;display:block;letter-spacing:.4px}
+.form-input{width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:7px;font-size:13px;outline:none;transition:border .2s}
+.form-input:focus{border-color:var(--blue);box-shadow:0 0 0 2px rgba(52,152,219,.12)}
+.form-row{display:flex;gap:10px}
+.form-row .form-group{flex:1}
+.modal-actions{display:flex;gap:8px;margin-top:20px;justify-content:flex-end}
+.btn-primary{padding:9px 22px;background:var(--navy);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer;transition:background .2s}
+.btn-primary:hover{background:#243447}
+.btn-secondary{padding:9px 18px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:7px;font-size:13px;cursor:pointer;transition:all .15s}
+.btn-secondary:hover{background:#f0f2f5}
+.btn-danger{padding:9px 18px;background:var(--red);color:#fff;border:none;border-radius:7px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-danger:hover{background:#c0392b}
+
+/* DELETE CONFIRM */
+.del-confirm{background:#fff8f8;border:2px solid var(--red);border-radius:10px;padding:20px 24px;max-width:360px;width:100%}
+.del-confirm-name{font-size:15px;font-weight:700;color:var(--navy);margin:8px 0 16px}
+.del-confirm-msg{font-size:12px;color:var(--muted);margin-bottom:16px}
+
+/* EDIT INLINE on card */
+.cust-edit-form{background:#fff;border:2px solid var(--blue);border-radius:10px;padding:16px;margin-bottom:2px}
+
 @media print{
   .no-print{display:none!important}
   .proposal-inner{box-shadow:none;padding:20px}
@@ -196,7 +251,16 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 <body>
 <div id="root"></div>
 <script type="text/babel">
-const { useState, useMemo, useCallback } = React;
+const { useState, useMemo, useCallback, useEffect } = React;
+
+// ===== STORAGE =====
+function loadCustomers() {
+  try { return JSON.parse(localStorage.getItem('gc_customers') || '[]'); } catch { return []; }
+}
+function saveCustomers(list) {
+  localStorage.setItem('gc_customers', JSON.stringify(list));
+}
+function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
 // ===== PRODUCT DATA =====
 const PRODUCTS = [
@@ -502,14 +566,54 @@ function calcItemTotal(sel) {
 // ===== COMPONENTS =====
 
 function App() {
-  const [tab, setTab] = useState('select');
+  const [tab, setTab] = useState('customers');
   const [activeCat, setActiveCat] = useState('all');
   const [tagFilter, setTagFilter] = useState('all');
   const [search, setSearch] = useState('');
   const [cart, setCart] = useState([]);
-  const [customerName, setCustomerName] = useState('');
   const [customerDate, setCustomerDate] = useState(new Date().toISOString().slice(0,10));
-  const [coordinator, setCoordinator] = useState('');
+
+  // Customer management
+  const [customers, setCustomers] = useState(loadCustomers);
+  const [activeCustomerId, setActiveCustomerId] = useState(null);
+  const [showNewForm, setShowNewForm] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
+  const activeCustomer = customers.find(c => c.id === activeCustomerId) || null;
+
+  // Sync cart → active customer in localStorage
+  useEffect(() => {
+    if (!activeCustomerId) return;
+    setCustomers(prev => {
+      const updated = prev.map(c => c.id === activeCustomerId ? {...c, cart} : c);
+      saveCustomers(updated);
+      return updated;
+    });
+  }, [cart]);
+
+  // Customer CRUD
+  const createCustomer = useCallback((data) => {
+    const c = { id: newId(), ...data, cart: [], createdAt: new Date().toISOString().slice(0,10) };
+    setCustomers(prev => { const u = [...prev, c]; saveCustomers(u); return u; });
+    setShowNewForm(false);
+  }, []);
+
+  const updateCustomer = useCallback((id, data) => {
+    setCustomers(prev => { const u = prev.map(c => c.id===id ? {...c,...data} : c); saveCustomers(u); return u; });
+  }, []);
+
+  const deleteCustomer = useCallback((id) => {
+    setCustomers(prev => { const u = prev.filter(c => c.id!==id); saveCustomers(u); return u; });
+    if (activeCustomerId === id) { setActiveCustomerId(null); setCart([]); }
+    setDeleteTarget(null);
+  }, [activeCustomerId]);
+
+  const selectCustomer = useCallback((cust) => {
+    setActiveCustomerId(cust.id);
+    setCart(cust.cart || []);
+    setCustomerDate(cust.createdAt || new Date().toISOString().slice(0,10));
+    setTab('select');
+  }, []);
 
   const cartIds = useMemo(() => new Set(cart.map(c=>c.product.id)), [cart]);
 
@@ -557,25 +661,24 @@ function App() {
   }, []);
 
   const totals = useMemo(() => {
-    let subtotal = 0;
-    let priceable = 0;
+    let subtotal = 0, priceable = 0;
     cart.forEach(s => {
       const p = s.customPrice !== null ? s.customPrice : (s.product.price||0);
-      if(p > 0 && s.qty) {
-        subtotal += p * (parseFloat(s.qty)||1);
-        priceable++;
-      }
+      const q = parseFloat(s.qty);
+      if(p > 0 && s.qty !== '' && !isNaN(q) && q > 0) { subtotal += p * q; priceable++; }
     });
     return {subtotal, priceable};
   }, [cart]);
 
   const catCounts = useMemo(() => {
     const c = {};
-    PRODUCTS.forEach(p => {
-      c[p.cat] = (c[p.cat]||0) + 1;
-    });
+    PRODUCTS.forEach(p => { c[p.cat] = (c[p.cat]||0) + 1; });
     return c;
   }, []);
+
+  const custName = activeCustomer
+    ? activeCustomer.name1 + (activeCustomer.name2 ? ` / ${activeCustomer.name2}` : '')
+    : '';
 
   return (
     <div className="app">
@@ -583,15 +686,60 @@ function App() {
       <header className="header no-print">
         <div className="header-logo">コーディネートシステム</div>
         <div className="header-tabs">
+          <button className={`tab-btn${tab==='customers'?' active':''}`} onClick={()=>setTab('customers')}>👥 お客様リスト</button>
           <button className={`tab-btn${tab==='select'?' active':''}`} onClick={()=>setTab('select')}>📋 商品選択</button>
           <button className={`tab-btn${tab==='proposal'?' active':''}`} onClick={()=>setTab('proposal')}>📄 仕様書・提案書</button>
         </div>
         <div className="header-customer">
-          <input className="header-input" placeholder="お客様名" value={customerName} onChange={e=>setCustomerName(e.target.value)}/>
-          <input className="header-input" placeholder="担当コーディネータ" value={coordinator} onChange={e=>setCoordinator(e.target.value)} style={{width:140}}/>
-          <input type="date" className="header-select" value={customerDate} onChange={e=>setCustomerDate(e.target.value)}/>
-          </div>
+          {activeCustomer ? (
+            <>
+              <span style={{fontSize:12,color:'#8899aa'}}>選択中：</span>
+              <span style={{fontSize:13,fontWeight:700,color:'#fff',maxWidth:200,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{custName}</span>
+              {activeCustomer.property && <span style={{fontSize:11,color:'var(--gold)',marginLeft:4}}>{activeCustomer.property}</span>}
+              <span style={{fontSize:11,color:'#8899aa',marginLeft:4}}>{activeCustomer.coordinator}</span>
+            </>
+          ) : (
+            <span style={{fontSize:12,color:'#8899aa'}}>お客様が未選択です</span>
+          )}
+          <input type="date" className="header-select" value={customerDate} onChange={e=>setCustomerDate(e.target.value)} style={{marginLeft:8}}/>
+        </div>
       </header>
+
+      {/* DELETE CONFIRM MODAL */}
+      {deleteTarget && (
+        <div className="modal-overlay" onClick={()=>setDeleteTarget(null)}>
+          <div className="del-confirm" onClick={e=>e.stopPropagation()}>
+            <div style={{fontSize:22,marginBottom:6}}>🗑️</div>
+            <div style={{fontSize:13,fontWeight:700,color:'var(--red)'}}>本当に削除しますか？</div>
+            <div className="del-confirm-name">
+              {deleteTarget.name1}{deleteTarget.name2 ? ` / ${deleteTarget.name2}` : ''} 様
+              {deleteTarget.property && <span style={{fontSize:12,color:'var(--muted)',marginLeft:8}}>({deleteTarget.property})</span>}
+            </div>
+            <div className="del-confirm-msg">この操作は元に戻せません。選択した商品リストも含めて完全に削除されます。</div>
+            <div className="modal-actions">
+              <button className="btn-secondary" onClick={()=>setDeleteTarget(null)}>キャンセル</button>
+              <button className="btn-danger" onClick={()=>deleteCustomer(deleteTarget.id)}>削除する</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* NEW CUSTOMER MODAL */}
+      {showNewForm && (
+        <CustomerFormModal onSave={createCustomer} onClose={()=>setShowNewForm(false)}/>
+      )}
+
+      {/* CUSTOMER LIST TAB */}
+      {tab === 'customers' && (
+        <CustomerListTab
+          customers={customers}
+          activeCustomerId={activeCustomerId}
+          onSelect={selectCustomer}
+          onUpdate={updateCustomer}
+          onDelete={setDeleteTarget}
+          onNew={()=>setShowNewForm(true)}
+        />
+      )}
 
       {/* SELECT TAB */}
       {tab === 'select' && (
@@ -673,8 +821,10 @@ function App() {
           </div>
           <ProposalView
             cart={cart}
-            customerName={customerName}
-            coordinator={coordinator}
+            customerName={custName}
+            customerName2={activeCustomer?.name2 || ''}
+            property={activeCustomer?.property || ''}
+            coordinator={activeCustomer?.coordinator || ''}
             date={customerDate}
             totals={totals}
           />
@@ -683,6 +833,140 @@ function App() {
     </div>
   );
 }
+
+// ===== CUSTOMER COMPONENTS =====
+
+function CustomerListTab({customers, activeCustomerId, onSelect, onUpdate, onDelete, onNew}) {
+  const [custSearch, setCustSearch] = useState('');
+  const [editingId, setEditingId] = useState(null);
+
+  const sorted = useMemo(() => {
+    const q = custSearch.toLowerCase();
+    return [...customers]
+      .filter(c => !q || c.name1?.toLowerCase().includes(q) || c.name2?.toLowerCase().includes(q) || c.property?.toLowerCase().includes(q))
+      .sort((a,b) => (a.name1||'').localeCompare(b.name1||'', 'ja'));
+  }, [customers, custSearch]);
+
+  return (
+    <div className="cust-tab">
+      <div className="cust-toolbar">
+        <input className="cust-search" placeholder="🔍 お客様名・物件名で検索..." value={custSearch} onChange={e=>setCustSearch(e.target.value)}/>
+        <span className="cust-count">{sorted.length}件</span>
+        <button className="cust-new-btn" onClick={onNew}>＋ 新規お客様登録</button>
+      </div>
+      {sorted.length === 0 ? (
+        <div className="cust-empty">
+          <div className="icon">👥</div>
+          <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>
+            {custSearch ? '該当するお客様が見つかりません' : 'お客様がまだ登録されていません'}
+          </div>
+          {!custSearch && <div style={{fontSize:12,marginTop:8}}>「＋ 新規お客様登録」からお客様を追加してください</div>}
+        </div>
+      ) : (
+        <div className="cust-grid">
+          {sorted.map(c => (
+            editingId === c.id
+              ? <CustomerEditCard key={c.id} customer={c} onSave={(data)=>{onUpdate(c.id,data);setEditingId(null);}} onCancel={()=>setEditingId(null)}/>
+              : <CustomerCard key={c.id} customer={c} isActive={c.id===activeCustomerId} onSelect={onSelect} onEdit={()=>setEditingId(c.id)} onDelete={onDelete}/>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function CustomerCard({customer:c, isActive, onSelect, onEdit, onDelete}) {
+  return (
+    <div className={`cust-card${isActive?' active-cust':''}`}>
+      {isActive && <div className="cust-active-badge">選択中</div>}
+      <div className="cust-card-names">
+        {c.name1} 様{c.name2 && <span className="name2">/ {c.name2} 様</span>}
+      </div>
+      {c.property && (
+        <div className="cust-card-prop"><span className="prop-icon">🏠</span>{c.property}</div>
+      )}
+      <div className="cust-card-meta">
+        {c.coordinator && <span>👤 {c.coordinator}</span>}
+        <span>📅 {c.createdAt}</span>
+        {c.cart && c.cart.length > 0 && <span>🛒 {c.cart.length}件選択済</span>}
+      </div>
+      <div className="cust-card-actions">
+        <button className="ca-btn select" onClick={()=>onSelect(c)}>商品選択へ →</button>
+        <button className="ca-btn edit" onClick={onEdit}>編集</button>
+        <button className="ca-btn delete" onClick={()=>onDelete(c)}>削除</button>
+      </div>
+    </div>
+  );
+}
+
+function CustomerEditCard({customer:c, onSave, onCancel}) {
+  const [form, setForm] = useState({name1:c.name1||'', name2:c.name2||'', property:c.property||'', coordinator:c.coordinator||''});
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  return (
+    <div className="cust-edit-form">
+      <div style={{fontSize:12,fontWeight:700,color:'var(--blue)',marginBottom:10}}>✏️ 編集中</div>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">お客様氏名①</label>
+          <input className="form-input" value={form.name1} onChange={e=>set('name1',e.target.value)} placeholder="例：山田 太郎"/>
+        </div>
+        <div className="form-group">
+          <label className="form-label">お客様氏名②（共有名義）</label>
+          <input className="form-input" value={form.name2} onChange={e=>set('name2',e.target.value)} placeholder="例：山田 花子"/>
+        </div>
+      </div>
+      <div className="form-group">
+        <label className="form-label">物件名</label>
+        <input className="form-input" value={form.property} onChange={e=>set('property',e.target.value)} placeholder="例：〇〇町△△丁目"/>
+      </div>
+      <div className="form-group">
+        <label className="form-label">担当コーディネータ</label>
+        <input className="form-input" value={form.coordinator} onChange={e=>set('coordinator',e.target.value)} placeholder="担当者名"/>
+      </div>
+      <div className="modal-actions">
+        <button className="btn-secondary" onClick={onCancel}>キャンセル</button>
+        <button className="btn-primary" onClick={()=>form.name1.trim()&&onSave(form)} disabled={!form.name1.trim()}>保存</button>
+      </div>
+    </div>
+  );
+}
+
+function CustomerFormModal({onSave, onClose}) {
+  const [form, setForm] = useState({name1:'', name2:'', property:'', coordinator:''});
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  return (
+    <div className="modal-overlay" onClick={onClose}>
+      <div className="modal" onClick={e=>e.stopPropagation()}>
+        <div className="modal-title">👤 新規お客様登録</div>
+        <div className="form-row">
+          <div className="form-group">
+            <label className="form-label">お客様氏名①　<span style={{color:'var(--red)'}}>*</span></label>
+            <input className="form-input" value={form.name1} onChange={e=>set('name1',e.target.value)} placeholder="例：山田 太郎" autoFocus/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">お客様氏名②（共有名義）</label>
+            <input className="form-input" value={form.name2} onChange={e=>set('name2',e.target.value)} placeholder="例：山田 花子"/>
+          </div>
+        </div>
+        <div className="form-group">
+          <label className="form-label">物件名</label>
+          <input className="form-input" value={form.property} onChange={e=>set('property',e.target.value)} placeholder="例：〇〇町△△丁目 新築"/>
+        </div>
+        <div className="form-group">
+          <label className="form-label">担当コーディネータ</label>
+          <input className="form-input" value={form.coordinator} onChange={e=>set('coordinator',e.target.value)} placeholder="担当者名"/>
+        </div>
+        <div className="modal-actions">
+          <button className="btn-secondary" onClick={onClose}>キャンセル</button>
+          <button className="btn-primary" onClick={()=>form.name1.trim()&&onSave(form)} disabled={!form.name1.trim()}
+            style={{opacity:form.name1.trim()?1:.5}}>登録する</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ===== PRODUCT COMPONENTS =====
 
 function ProductCard({product, inCart, onAdd}) {
   const p = product;
@@ -844,7 +1128,7 @@ function CartItem({sel, onRemove, onUpdate}) {
   );
 }
 
-function ProposalView({cart, customerName, coordinator, date, totals}) {
+function ProposalView({cart, customerName, customerName2, property, coordinator, date, totals}) {
   if(cart.length === 0) {
     return (
       <div className="proposal-inner">
@@ -882,6 +1166,8 @@ function ProposalView({cart, customerName, coordinator, date, totals}) {
       <div className="prop-customer">
         <h3>お客様</h3>
         <div className="name">{customerName || '（お客様名未入力）'} 様</div>
+        {customerName2 && <div className="sub">共有名義：{customerName2} 様</div>}
+        {property && <div className="sub">物件名：{property}</div>}
       </div>
 
       {/* 外部（FACADE） */}
