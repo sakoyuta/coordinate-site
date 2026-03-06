@@ -635,14 +635,18 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .img-preview-sm{width:72px;height:72px;object-fit:cover;border-radius:6px;border:1px solid #ddd;cursor:pointer}
 .img-uploading{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
 .prod-list-skipped{opacity:.4;pointer-events:none}
-.prod-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:3px;cursor:pointer;transition:all .15s}
+.prod-row{display:grid;grid-template-columns:26px 42px 1fr 90px 26px 120px;align-items:center;column-gap:8px;padding:7px 10px;background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:3px;cursor:pointer;transition:all .15s}
 .prod-row:hover{border-color:#bbc3cf;background:#fafbfc}
 .prod-row.selected{border-color:var(--blue);background:#f0f5ff}
-.pr-info{flex:1;min-width:0}
-.pr-name{font-size:12px;font-weight:700;color:var(--navy)}
-.pr-note-inline{font-size:10px;color:var(--muted);border-left:2px solid var(--gold);padding-left:5px;margin-top:1px}
-.pr-maker{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;min-width:80px;text-align:right}
-.pr-price{font-size:11px;font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;min-width:130px;text-align:right}
+.pr-info{min-width:0;overflow:hidden}
+.pr-name-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
+.pr-name{font-size:12px;font-weight:700;color:var(--navy);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-note-inline{font-size:10px;color:var(--muted);border-left:2px solid var(--gold);padding-left:5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pr-maker{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.pr-catalog-cell{display:flex;align-items:center;justify-content:center}
+.prod-pdf-btn-icon{font-size:15px;background:none;border:none;cursor:pointer;padding:2px;line-height:1;opacity:.6;transition:all .15s}
+.prod-pdf-btn-icon:hover{opacity:1;transform:scale(1.15)}
+.pr-price{font-size:11px;font-weight:700;color:var(--navy);white-space:nowrap;text-align:right}
 .add-btn-sm{width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;flex-shrink:0;transition:all .15s}
 .add-btn-sm:hover{background:#2980b9;transform:scale(1.1)}
 .add-btn-sm.in-cart{background:var(--green)}
@@ -1073,51 +1077,31 @@ const PRODUCTS = [
   {id:'d272',cat:'aircon',catName:'エアコン',group:'detail',name:'エアコン用コンセント200V追加（内壁のみ）',maker:'Panasonic',tags:['op'],lines:['lacie','hours','lifeplus','life'],priceType:'fixed',price:40000,unit:'カ所',priceText:'¥40,000/カ所',note:'外壁面・内壁がない場合天井付け'},
 ];
 
+// 部位（建物の場所）ベースのカテゴリ。cats: 各部位に紐づく旧商品カテゴリID群
 const CATEGORIES = [
-  {id:'all',name:'すべて',group:'all'},
-  {id:'facade-header',name:'FACADE（外部）',group:'header-facade'},
+  {id:'all',   name:'すべて',          group:'all',          cats:[]},
+  {id:'facade-header', name:'FACADE（外部）', group:'header-facade', cats:[]},
 
-  {id:'gaiheki',name:'外壁（サイディング）',group:'facade'},
-  {id:'gaiheki-kinzoku',name:'外壁（金属サイディング）',group:'facade'},
-  {id:'gaiheki-nuri',name:'外壁（塗り壁）',group:'facade'},
-  {id:'gaiheki-solido',name:'外壁（SOLIDO）',group:'facade'},
-  {id:'porch',name:'ポーチ',group:'facade'},
-  {id:'yane',name:'屋根・樋・軒天',group:'facade'},
-  {id:'hisashi',name:'庇',group:'facade'},
-  {id:'garage',name:'電動ガレージシャッター',group:'facade'},
-  {id:'mado330',name:'窓 APW330',group:'facade'},
-  {id:'mado430',name:'窓 APW430',group:'facade'},
-  {id:'genkan-door',name:'玄関ドア',group:'facade'},
-  {id:'gaibu-setsubi',name:'外部設備',group:'facade'},
-  {id:'ecocute',name:'エコキュート・換気',group:'facade'},
-  {id:'detail-header',name:'DETAIL（内部）',group:'header-detail'},
-  {id:'tenjou',name:'天井変更工事',group:'detail'},
-  {id:'hokyou',name:'補強・下地',group:'detail'},
-  {id:'niche',name:'ニッチ',group:'detail'},
-  {id:'cross',name:'クロス・アクセント',group:'detail'},
-  {id:'yuka',name:'床材（フローリング）',group:'detail'},
-  {id:'genkan-kamachi',name:'玄関框',group:'detail'},
-  {id:'cf-ft',name:'床材（CF・フロアタイル）',group:'detail'},
-  {id:'carpet',name:'カーペットタイル',group:'detail'},
-  {id:'tile-naisou',name:'タイル（内装）',group:'detail'},
-  {id:'tatami',name:'畳・小上がり',group:'detail'},
-  {id:'tenken',name:'点検口・換気システム',group:'detail'},
-  {id:'kaidan',name:'階段',group:'detail'},
-  {id:'madodai',name:'窓台・腰壁・垂壁',group:'detail'},
-  {id:'door',name:'室内ドア',group:'detail'},
-  {id:'shitsunai-mado',name:'室内窓',group:'detail'},
-  {id:'accent-panel',name:'アクセントパネル',group:'detail'},
-  {id:'koushi',name:'格子',group:'detail'},
-  {id:'accent-tile',name:'アクセントタイル・エコカラット',group:'detail'},
-  {id:'counter',name:'インテリアカウンター',group:'detail'},
-  {id:'shunou',name:'収納棚',group:'detail'},
-  {id:'kutsubako',name:'玄関靴箱',group:'detail'},
-  {id:'toilet-shunou',name:'トイレ収納',group:'detail'},
-  {id:'slop',name:'スロップシンク・洗濯パン',group:'detail'},
-  {id:'tearai',name:'玄関手洗い',group:'detail'},
-  {id:'monohoshi',name:'物干し・乾太くん',group:'detail'},
-  {id:'switch',name:'スイッチ・コンセント',group:'detail'},
-  {id:'aircon',name:'エアコン',group:'detail'},
+  {id:'gaiheki',    name:'外壁',              group:'facade', cats:['gaiheki','gaiheki-kinzoku','gaiheki-nuri','gaiheki-solido']},
+  {id:'yane',       name:'屋根・軒天・樋',    group:'facade', cats:['yane']},
+  {id:'hisashi',    name:'庇',               group:'facade', cats:['hisashi']},
+  {id:'mado',       name:'窓（サッシ）',      group:'facade', cats:['mado330','mado430']},
+  {id:'genkan-door',name:'玄関ドア',           group:'facade', cats:['genkan-door']},
+  {id:'porch',      name:'ポーチ',            group:'facade', cats:['porch']},
+  {id:'garage',     name:'ガレージ',           group:'facade', cats:['garage']},
+  {id:'gaibu',      name:'外部設備',           group:'facade', cats:['gaibu-setsubi','ecocute']},
+
+  {id:'detail-header', name:'DETAIL（内部）', group:'header-detail', cats:[]},
+
+  {id:'tenjou',     name:'天井・壁',           group:'detail', cats:['tenjou','cross','accent-panel']},
+  {id:'yuka',       name:'床材',              group:'detail', cats:['yuka','cf-ft','carpet','tile-naisou','tatami']},
+  {id:'kaidan',     name:'階段',              group:'detail', cats:['kaidan']},
+  {id:'mado-nai',   name:'窓廻り',            group:'detail', cats:['madodai','shitsunai-mado','koushi']},
+  {id:'door',       name:'室内ドア・建具',     group:'detail', cats:['door']},
+  {id:'shunou',     name:'収納',              group:'detail', cats:['shunou','kutsubako','toilet-shunou']},
+  {id:'setsubi',    name:'水まわり・設備',     group:'detail', cats:['slop','tearai','monohoshi','tenken']},
+  {id:'denki',      name:'電気・空調',         group:'detail', cats:['switch','aircon']},
+  {id:'zosaku',     name:'造作・その他',       group:'detail', cats:['niche','hokyou','counter','genkan-kamachi','accent-tile']},
 ];
 
 function fmtPrice(n) {
@@ -1347,8 +1331,10 @@ function App() {
   const cartIds = useMemo(() => new Set(cart.map(c=>c.product.id)), [cart]);
 
   const filtered = useMemo(() => {
+    const bui = activeCat !== 'all' ? CATEGORIES.find(c => c.id === activeCat) : null;
+    const buiCats = bui ? bui.cats : null;
     return allProducts.filter(p => {
-      if(activeCat !== 'all' && p.cat !== activeCat) return false;
+      if(buiCats && !buiCats.includes(p.cat)) return false;
       if(tagFilter !== 'all' && !p.tags.includes(tagFilter)) return false;
       if(search) {
         const q = search.toLowerCase();
@@ -1402,15 +1388,21 @@ function App() {
 
   const catCounts = useMemo(() => {
     const c = {};
-    allProducts.forEach(p => { c[p.cat] = (c[p.cat]||0) + 1; });
+    CATEGORIES.filter(b => b.cats && b.cats.length > 0).forEach(bui => {
+      c[bui.id] = allProducts.filter(p => bui.cats.includes(p.cat)).length;
+    });
     return c;
   }, [allProducts]);
 
   const realCats = useMemo(() =>
-    CATEGORIES.filter(c => c.group !== 'all' && c.group !== 'header-facade' && c.group !== 'header-detail'),
+    CATEGORIES.filter(c => c.cats && c.cats.length > 0),
   []);
   const catsDone = useMemo(() =>
-    realCats.filter(c => skipCats[c.id] || cart.some(s => s.product.cat === c.id)),
+    realCats.filter(bui => {
+      const hasProduct = bui.cats.some(cat => cart.some(s => s.product.cat === cat));
+      const allSkipped = bui.cats.every(cat => skipCats[cat]);
+      return hasProduct || allSkipped;
+    }),
   [realCats, skipCats, cart]);
   const allDone = catsDone.length === realCats.length;
 
@@ -1552,14 +1544,14 @@ function App() {
             {CATEGORIES.filter(c=>c.group!=='all').map(c=>{
               if(c.group==='header-facade') return <div key={c.id} className="sidebar-grouplabel facade">{c.name}</div>;
               if(c.group==='header-detail') return <div key={c.id} className="sidebar-grouplabel detail">{c.name}</div>;
-              const hasProduct = cart.some(s => s.product.cat === c.id);
-              const skipped = skipCats[c.id];
-              const done = hasProduct || skipped;
+              const hasProduct = c.cats.some(cat => cart.some(s => s.product.cat === cat));
+              const allSkipped = c.cats.length > 0 && c.cats.every(cat => skipCats[cat]);
+              const done = hasProduct || allSkipped;
               return (
                 <div key={c.id} className={`sidebar-item${activeCat===c.id?' active':''}`} onClick={()=>setActiveCat(c.id)}>
                   <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
                   {done
-                    ? <span className={skipped ? 'sel-badge-skip' : 'sel-badge-done'}>{skipped ? '☑' : '✓'}</span>
+                    ? <span className={allSkipped ? 'sel-badge-skip' : 'sel-badge-done'}>{allSkipped ? '☑' : '✓'}</span>
                     : <span className="ct">{catCounts[c.id]||0}</span>
                   }
                 </div>
@@ -1575,7 +1567,7 @@ function App() {
                 <div style={{display:'flex',justifyContent:'space-between',fontSize:11,marginBottom:3}}>
                   <span style={{color:'var(--muted)'}}>仕様打ち合わせ進捗</span>
                   <span style={{fontWeight:700,color: allDone ? 'var(--green)' : 'var(--text)'}}>
-                    {catsDone.length} / {realCats.length} カテゴリ完了
+                    {catsDone.length} / {realCats.length} 部位完了
                   </span>
                 </div>
                 <div style={{height:5,background:'#e2e8f0',borderRadius:3,overflow:'hidden'}}>
@@ -2383,28 +2375,28 @@ function ProductRow({product, inCart, onAdd, disabled}) {
           onClick={e=>{e.stopPropagation();if(!disabled)onAdd(p);}} title={inCart?'選択済み':'追加'}>
           {inCart ? '✓' : '+'}
         </button>
-        {/* サムネイル */}
         {p.imageUrl
           ? <img src={p.imageUrl} className="prod-thumb" alt={p.name}
               onClick={e=>{e.stopPropagation();setLightbox({url:p.imageUrl,type:'image'});}}
               title="クリックで拡大"/>
           : <div className="prod-thumb-empty" title="画像なし">📷</div>
         }
-        <div style={{display:'flex',gap:3,flexShrink:0}}>
-          {p.tags.map(t=>(
-            <span key={t} className={`tag ${t}`}>{t==='std'?'標準':t==='op'?'OP':t==='hit'?'HIT!':t}</span>
-          ))}
-        </div>
         <div className="pr-info">
-          <div className="pr-name">{p.name}</div>
+          <div className="pr-name-row">
+            <span className="pr-name">{p.name}</span>
+            {p.tags.map(t=>(
+              <span key={t} className={`tag ${t}`}>{t==='std'?'標準':t==='op'?'OP':t==='hit'?'HIT!':t}</span>
+            ))}
+          </div>
           {p.note && <div className="pr-note-inline">{p.note}</div>}
         </div>
         <div className="pr-maker">{p.maker}</div>
-        {p.catalogUrl && (
-          <button className="prod-pdf-btn" onClick={e=>{e.stopPropagation();setLightbox({url:p.catalogUrl,type:'pdf'});}}>
-            📄 カタログ
-          </button>
-        )}
+        <div className="pr-catalog-cell">
+          {p.catalogUrl && (
+            <button className="prod-pdf-btn-icon" onClick={e=>{e.stopPropagation();setLightbox({url:p.catalogUrl,type:'pdf'});}}
+              title="カタログを開く">📄</button>
+          )}
+        </div>
         <div className="pr-price">{p.priceText}</div>
       </div>
       {lightbox && <Lightbox url={lightbox.url} type={lightbox.type} onClose={()=>setLightbox(null)}/>}
@@ -2459,7 +2451,7 @@ function CartPanel({cart, totals, onRemove, onUpdate, onClear, onProposal, onSpe
           {allDone
             ? <span style={{color:'var(--green)',fontWeight:700}}>🎉 仕様打ち合わせ完了！</span>
             : <span style={{color:'var(--muted)'}}>
-                残り <b style={{color:'var(--navy)'}}>{totalCats - catsDone}</b> カテゴリ未完了
+                残り <b style={{color:'var(--navy)'}}>{totalCats - catsDone}</b> 部位未完了
               </span>
           }
           <div style={{height:3,background:'#e2e8f0',borderRadius:2,marginTop:5,overflow:'hidden'}}>
