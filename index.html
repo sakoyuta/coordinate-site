@@ -1296,6 +1296,18 @@ function App() {
     });
   }, [activeCustomerId]);
 
+  const toggleBuiSkip = useCallback((buiId) => {
+    const bui = CATEGORIES.find(c => c.id === buiId);
+    if (!bui || !bui.cats) return;
+    setSkipCats(prev => {
+      const allSkipped = bui.cats.every(cat => prev[cat]);
+      const next = {...prev};
+      bui.cats.forEach(cat => { if (allSkipped) delete next[cat]; else next[cat] = true; });
+      if (activeCustomerId) saveSkipCats(activeCustomerId, next);
+      return next;
+    });
+  }, [activeCustomerId]);
+
   // Admin product CRUD
   const adminSaveProduct = useCallback((prod) => {
     if (prod.id && prod.id.startsWith('cp_')) {
@@ -1596,39 +1608,78 @@ function App() {
                   <div>該当する商品が見つかりませんでした</div>
                 </div>
               )}
-              {Object.entries(grouped).map(([catKey, {catName, group, items}]) => {
-                const hasProduct = cart.some(s => s.product.cat === catKey);
-                const skipped = skipCats[catKey];
-                const done = hasProduct || skipped;
-                return (
-                  <div key={catKey}>
-                    <div className="cat-title">
-                      <span>{catName}</span>
-                      <span className={`group-badge ${group}`}>{group==='facade'?'外部':'内部'}</span>
-                      <span style={{marginLeft:6,fontSize:11,opacity:.7}}>{items.length}件</span>
-                      <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:6}}>
-                        {done && (
-                          <span style={{fontSize:10,fontWeight:700,
-                            color: skipped ? '#e67e22' : '#6ee7b7',
-                            background: skipped ? 'rgba(230,126,34,.2)' : 'rgba(39,174,96,.25)',
-                            padding:'1px 8px',borderRadius:8}}>
-                            {skipped ? '☑ 選択しない' : '✓ 選択済'}
-                          </span>
-                        )}
-                        <button className={`skip-btn${skipped?' skipped':''}`}
-                          onClick={e=>{e.stopPropagation();toggleSkip(catKey);}}>
-                          {skipped ? '✕ スキップ解除' : '選択しない'}
-                        </button>
+              {activeCat !== 'all' ? (
+                /* 部位ビュー：フラットリスト＋1つのスキップボタン */
+                (() => {
+                  const bui = CATEGORIES.find(c => c.id === activeCat);
+                  const buiSkipped = bui && bui.cats.every(cat => skipCats[cat]);
+                  const buiHasProduct = bui && bui.cats.some(cat => cart.some(s => s.product.cat === cat));
+                  const done = buiHasProduct || buiSkipped;
+                  return (
+                    <div>
+                      <div className="cat-title">
+                        <span>{bui?.name}</span>
+                        <span className={`group-badge ${bui?.group}`}>{bui?.group==='facade'?'外部':'内部'}</span>
+                        <span style={{marginLeft:6,fontSize:11,opacity:.7}}>{filtered.length}件</span>
+                        <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:6}}>
+                          {done && (
+                            <span style={{fontSize:10,fontWeight:700,
+                              color: buiSkipped ? '#e67e22' : '#6ee7b7',
+                              background: buiSkipped ? 'rgba(230,126,34,.2)' : 'rgba(39,174,96,.25)',
+                              padding:'1px 8px',borderRadius:8}}>
+                              {buiSkipped ? '☑ 選択しない' : '✓ 選択済'}
+                            </span>
+                          )}
+                          <button className={`skip-btn${buiSkipped?' skipped':''}`}
+                            onClick={e=>{e.stopPropagation();toggleBuiSkip(activeCat);}}>
+                            {buiSkipped ? '✕ スキップ解除' : '選択しない'}
+                          </button>
+                        </div>
+                      </div>
+                      <div className={`prod-list${buiSkipped?' prod-list-skipped':''}`}>
+                        {filtered.map(p => (
+                          <ProductRow key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart} disabled={!!buiSkipped}/>
+                        ))}
                       </div>
                     </div>
-                    <div className={`prod-list${skipped?' prod-list-skipped':''}`}>
-                      {items.map(p => (
-                        <ProductRow key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart} disabled={!!skipped}/>
-                      ))}
+                  );
+                })()
+              ) : (
+                /* すべて表示：旧カテゴリ別サブヘッダー */
+                Object.entries(grouped).map(([catKey, {catName, group, items}]) => {
+                  const hasProduct = cart.some(s => s.product.cat === catKey);
+                  const skipped = skipCats[catKey];
+                  const done = hasProduct || skipped;
+                  return (
+                    <div key={catKey}>
+                      <div className="cat-title">
+                        <span>{catName}</span>
+                        <span className={`group-badge ${group}`}>{group==='facade'?'外部':'内部'}</span>
+                        <span style={{marginLeft:6,fontSize:11,opacity:.7}}>{items.length}件</span>
+                        <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:6}}>
+                          {done && (
+                            <span style={{fontSize:10,fontWeight:700,
+                              color: skipped ? '#e67e22' : '#6ee7b7',
+                              background: skipped ? 'rgba(230,126,34,.2)' : 'rgba(39,174,96,.25)',
+                              padding:'1px 8px',borderRadius:8}}>
+                              {skipped ? '☑ 選択しない' : '✓ 選択済'}
+                            </span>
+                          )}
+                          <button className={`skip-btn${skipped?' skipped':''}`}
+                            onClick={e=>{e.stopPropagation();toggleSkip(catKey);}}>
+                            {skipped ? '✕ スキップ解除' : '選択しない'}
+                          </button>
+                        </div>
+                      </div>
+                      <div className={`prod-list${skipped?' prod-list-skipped':''}`}>
+                        {items.map(p => (
+                          <ProductRow key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart} disabled={!!skipped}/>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                })
+              )}
             </div>
           </div>
 
