@@ -1538,16 +1538,6 @@ function App() {
         <div className="body">
           {/* CATEGORY SIDEBAR */}
           <nav className="sidebar no-print">
-            {/* 進捗サマリー */}
-            <div className="sel-prog-wrap">
-              <div className="sel-prog-row">
-                <span style={{color:'#8899aa'}}>打ち合わせ進捗</span>
-                <span style={{color: allDone ? '#6ee7b7' : '#fff', fontWeight:700}}>{catsDone.length}/{realCats.length}</span>
-              </div>
-              <div className="sel-prog-track">
-                <div className="sel-prog-fill" style={{width:(catsDone.length/realCats.length*100)+'%', background: allDone ? '#38a169' : 'var(--gold)'}}/>
-              </div>
-            </div>
             <div className="sidebar-group">
               <div className={`sidebar-item${activeCat==='all'?' active':''}`} onClick={()=>setActiveCat('all')}>
                 すべて表示 <span className="ct">{allProducts.length}</span>
@@ -1573,23 +1563,6 @@ function App() {
 
           {/* MAIN CONTENT */}
           <div className="main">
-            {/* 進捗バー */}
-            <div className="no-print" style={{padding:'7px 16px',background:'#fff',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
-              <div style={{flex:1}}>
-                <div style={{display:'flex',justifyContent:'space-between',fontSize:11,marginBottom:3}}>
-                  <span style={{color:'var(--muted)'}}>仕様打ち合わせ進捗</span>
-                  <span style={{fontWeight:700,color: allDone ? 'var(--green)' : 'var(--text)'}}>
-                    {catsDone.length} / {realCats.length} 部位完了
-                  </span>
-                </div>
-                <div style={{height:5,background:'#e2e8f0',borderRadius:3,overflow:'hidden'}}>
-                  <div style={{height:'100%',width:(catsDone.length/realCats.length*100)+'%',
-                    background: allDone ? 'var(--green)' : 'var(--blue)',borderRadius:3,transition:'width .4s'}}/>
-                </div>
-              </div>
-              {allDone && <span style={{color:'var(--green)',fontWeight:700,fontSize:12,whiteSpace:'nowrap'}}>🎉 打ち合わせ完了！</span>}
-            </div>
-
             {/* 検索・フィルター */}
             <div className="search-bar no-print">
               <input className="search-input" placeholder="🔍 商品名・メーカーで検索..." value={search} onChange={e=>setSearch(e.target.value)}/>
@@ -1645,35 +1618,37 @@ function App() {
                   );
                 })()
               ) : (
-                /* すべて表示：旧カテゴリ別サブヘッダー */
-                Object.entries(grouped).map(([catKey, {catName, group, items}]) => {
-                  const hasProduct = cart.some(s => s.product.cat === catKey);
-                  const skipped = skipCats[catKey];
-                  const done = hasProduct || skipped;
+                /* すべて表示：部位ごとにまとめて表示 */
+                CATEGORIES.filter(c => c.cats && c.cats.length > 0).map(bui => {
+                  const buiItems = filtered.filter(p => bui.cats.includes(p.cat));
+                  if (buiItems.length === 0) return null;
+                  const buiSkipped = bui.cats.every(cat => skipCats[cat]);
+                  const buiHasProduct = bui.cats.some(cat => cart.some(s => s.product.cat === cat));
+                  const done = buiHasProduct || buiSkipped;
                   return (
-                    <div key={catKey}>
+                    <div key={bui.id}>
                       <div className="cat-title">
-                        <span>{catName}</span>
-                        <span className={`group-badge ${group}`}>{group==='facade'?'外部':'内部'}</span>
-                        <span style={{marginLeft:6,fontSize:11,opacity:.7}}>{items.length}件</span>
+                        <span>{bui.name}</span>
+                        <span className={`group-badge ${bui.group}`}>{bui.group==='facade'?'外部':'内部'}</span>
+                        <span style={{marginLeft:6,fontSize:11,opacity:.7}}>{buiItems.length}件</span>
                         <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:6}}>
                           {done && (
                             <span style={{fontSize:10,fontWeight:700,
-                              color: skipped ? '#e67e22' : '#6ee7b7',
-                              background: skipped ? 'rgba(230,126,34,.2)' : 'rgba(39,174,96,.25)',
+                              color: buiSkipped ? '#e67e22' : '#6ee7b7',
+                              background: buiSkipped ? 'rgba(230,126,34,.2)' : 'rgba(39,174,96,.25)',
                               padding:'1px 8px',borderRadius:8}}>
-                              {skipped ? '☑ 選択しない' : '✓ 選択済'}
+                              {buiSkipped ? '☑ 選択しない' : '✓ 選択済'}
                             </span>
                           )}
-                          <button className={`skip-btn${skipped?' skipped':''}`}
-                            onClick={e=>{e.stopPropagation();toggleSkip(catKey);}}>
-                            {skipped ? '✕ スキップ解除' : '選択しない'}
+                          <button className={`skip-btn${buiSkipped?' skipped':''}`}
+                            onClick={e=>{e.stopPropagation();toggleBuiSkip(bui.id);}}>
+                            {buiSkipped ? '✕ スキップ解除' : '選択しない'}
                           </button>
                         </div>
                       </div>
-                      <div className={`prod-list${skipped?' prod-list-skipped':''}`}>
-                        {items.map(p => (
-                          <ProductRow key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart} disabled={!!skipped}/>
+                      <div className={`prod-list${buiSkipped?' prod-list-skipped':''}`}>
+                        {buiItems.map(p => (
+                          <ProductRow key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart} disabled={!!buiSkipped}/>
                         ))}
                       </div>
                     </div>
