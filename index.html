@@ -195,32 +195,59 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .print-btn:hover{background:#243447}
 .no-items-msg{text-align:center;padding:60px;color:var(--muted)}
 /* CUSTOMER LIST TAB */
-.cust-tab{flex:1;overflow-y:auto;padding:20px;background:var(--bg)}
-.cust-toolbar{display:flex;gap:10px;align-items:center;margin-bottom:16px;flex-wrap:wrap}
-.cust-search{flex:1;min-width:180px;padding:8px 12px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;background:#fff}
-.cust-search:focus{border-color:var(--blue)}
-.cust-new-btn{padding:8px 18px;background:var(--navy);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap;transition:background .2s}
+.cust-tab{flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column}
+.cust-new-btn{padding:7px 16px;background:var(--navy);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .cust-new-btn:hover{background:#243447}
-.cust-count{font-size:12px;color:var(--muted);white-space:nowrap}
-.cust-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
-.cust-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:16px;position:relative;transition:box-shadow .2s}
-.cust-card:hover{box-shadow:0 3px 14px rgba(0,0,0,.09)}
-.cust-card.active-cust{border-color:var(--blue);background:#f0f5ff}
-.cust-card-names{font-size:16px;font-weight:700;color:var(--navy);margin-bottom:4px;padding-right:30px}
-.cust-card-names .name2{font-size:13px;color:var(--muted);font-weight:400;margin-left:6px}
-.cust-card-prop{font-size:12px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;gap:4px}
-.cust-card-prop .prop-icon{opacity:.6}
-.cust-card-meta{display:flex;gap:10px;font-size:11px;color:var(--muted);flex-wrap:wrap}
-.cust-card-actions{display:flex;gap:6px;margin-top:10px;border-top:1px solid var(--border);padding-top:10px}
-.ca-btn{flex:1;padding:6px 8px;border-radius:6px;border:1px solid var(--border);background:#fff;font-size:12px;font-weight:600;cursor:pointer;transition:all .15s}
-.ca-btn.select{background:var(--navy);color:#fff;border-color:var(--navy)}
-.ca-btn.select:hover{background:#243447}
-.ca-btn.edit:hover{background:#f0f2f5}
-.ca-btn.delete{color:var(--red)}
-.ca-btn.delete:hover{background:#fde8e8;border-color:var(--red)}
-.cust-active-badge{position:absolute;top:10px;right:10px;background:var(--blue);color:#fff;font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px}
-.cust-empty{text-align:center;padding:80px 20px;color:var(--muted)}
+/* Office tabs */
+.cl-office-tabs{display:flex;align-items:center;gap:4px;padding:10px 16px 0;background:#fff;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.cl-office-tab{padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;border-radius:0;transition:all .15s}
+.cl-office-tab.active{color:var(--navy);border-bottom-color:var(--navy)}
+.cl-office-tab.active-dark{background:var(--navy);color:#fff;border-radius:6px 6px 0 0;border-bottom-color:var(--navy)}
+/* Search + Filters */
+.cl-search-area{background:#fff;padding:10px 16px 8px;border-bottom:1px solid #eee}
+.cl-search{width:100%;padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;box-sizing:border-box}
+.cl-search:focus{border-color:var(--blue)}
+.cl-filters{display:flex;align-items:center;gap:8px;padding:7px 16px;background:#fff;border-bottom:1px solid var(--border);flex-wrap:wrap;font-size:12px}
+.cl-filter-label{color:var(--muted);font-weight:700;margin-right:2px}
+.cl-filter-sel{padding:3px 8px;border:1px solid var(--border);border-radius:6px;font-size:12px;background:#fff;cursor:pointer;color:var(--navy)}
+/* List rows */
+.cl-body{padding:12px 16px;flex:1;overflow-y:auto}
+.cl-count{font-size:12px;color:var(--muted);margin-bottom:8px}
+.cl-row{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:12px;transition:box-shadow .15s}
+.cl-row:hover{box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.cl-row.active-cust{border-color:var(--blue);background:#f0f5ff}
+.cl-row-main{flex:1;min-width:0}
+.cl-row-top{display:flex;align-items:center;gap:7px;flex-wrap:wrap;margin-bottom:4px}
+.cl-row-name{font-size:16px;font-weight:700;color:var(--navy)}
+.cl-tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;border:1px solid #ccc;color:#555;background:#f5f5f5}
+.cl-tag.office{background:#e8f0fe;border-color:#c5d8f8;color:#1a4e9a}
+.cl-tag.status{background:#fef9e7;border-color:#f6d860;color:#7c5d00}
+.cl-tag.rank{background:#f0fdf4;border-color:#86efac;color:#166534}
+.cl-tag.month{background:#fdf2f8;border-color:#f0abfc;color:#86198f}
+.cl-row-meta{font-size:11px;color:var(--muted);margin-bottom:5px}
+.cl-row-meta span{margin-right:12px}
+.cl-scores{display:flex;gap:4px;flex-wrap:wrap}
+.score-badge{display:inline-flex;align-items:center;gap:1px;padding:2px 7px;border:1px solid #ddd;border-radius:4px;font-size:11px;font-weight:600;background:#fafafa;color:#aaa}
+.score-badge.circle{border-color:#34d399;color:#065f46;background:#d1fae5}
+.score-badge.triangle{border-color:#fbbf24;color:#78350f;background:#fef3c7}
+.score-badge.cross{border-color:#f87171;color:#7f1d1d;background:#fee2e2}
+.cl-row-actions{display:flex;gap:6px;flex-shrink:0;align-items:center}
+.cl-open-btn{padding:6px 14px;background:var(--navy);color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer}
+.cl-open-btn:hover{background:#243447}
+.cl-edit-btn{padding:6px 12px;background:#fff;color:var(--text);border:1px solid var(--border);border-radius:6px;font-size:12px;cursor:pointer}
+.cl-edit-btn:hover{background:#f0f2f5}
+.cl-del-btn{padding:6px 10px;background:#fff;color:#aaa;border:1px solid #ddd;border-radius:6px;font-size:14px;cursor:pointer;line-height:1}
+.cl-del-btn:hover{background:#fde8e8;color:var(--red);border-color:var(--red)}
+/* Score selector in form */
+.score-sel-row{display:flex;gap:6px;align-items:center}
+.score-sel-btn{padding:3px 10px;border:1px solid #ccc;border-radius:4px;background:#fff;font-size:12px;font-weight:600;cursor:pointer;color:#999}
+.score-sel-btn.sel-circle{border-color:#34d399;background:#d1fae5;color:#065f46}
+.score-sel-btn.sel-triangle{border-color:#fbbf24;background:#fef3c7;color:#78350f}
+.score-sel-btn.sel-cross{border-color:#f87171;background:#fee2e2;color:#7f1d1d}
+.cust-empty{text-align:center;padding:60px 20px;color:var(--muted)}
 .cust-empty .icon{font-size:52px;margin-bottom:14px;opacity:.35}
+/* EDIT INLINE - keep for compatibility */
+.cust-edit-form{background:#fff;border:2px solid var(--blue);border-radius:10px;padding:16px;margin-bottom:8px}
 
 /* MODAL OVERLAY */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px}
@@ -637,11 +664,20 @@ function newId() { return Date.now().toString(36) + Math.random().toString(36).s
 // Supabase helper: convert customer object ↔ DB row
 function dbCustomer(c) {
   return { id: c.id, name1: c.name1||'', name2: c.name2||'', property: c.property||'',
-    coordinator: c.coordinator||'', created_at_str: c.createdAt||'', cart: c.cart||[] };
+    coordinator: c.coordinator||'', created_at_str: c.createdAt||'', cart: c.cart||[],
+    info: { office: c.office||'', status: c.status||'', rank: c.rank||'',
+      prospectMonth: c.prospectMonth||'', updatedAt: c.updatedAt||'',
+      jin: c.jin||'', mono: c.mono||'', kane: c.kane||'', toki: c.toki||'', teki: c.teki||'' }
+  };
 }
 function normalizeCustomer(row) {
+  const info = row.info || {};
   return { id: row.id, name1: row.name1||'', name2: row.name2||'', property: row.property||'',
-    coordinator: row.coordinator||'', createdAt: row.created_at_str||'', cart: row.cart||[] };
+    coordinator: row.coordinator||'', createdAt: row.created_at_str||'', cart: row.cart||[],
+    office: info.office||'', status: info.status||'', rank: info.rank||'',
+    prospectMonth: info.prospectMonth||'', updatedAt: info.updatedAt||'',
+    jin: info.jin||'', mono: info.mono||'', kane: info.kane||'', toki: info.toki||'', teki: info.teki||''
+  };
 }
 // Sync all per-customer blobs from Supabase → localStorage
 async function syncCustomerBlobsFromSupa(custId) {
@@ -1224,14 +1260,15 @@ function App() {
 
   // Customer CRUD
   const createCustomer = useCallback((data) => {
-    const c = { id: newId(), ...data, cart: [], createdAt: new Date().toISOString().slice(0,10) };
+    const now = new Date().toISOString();
+    const c = { id: newId(), ...data, cart: [], createdAt: now.slice(0,10), updatedAt: now };
     setCustomers(prev => { const u = [...prev, c]; saveCustomers(u); return u; });
     supa.from('customers').insert(dbCustomer(c));
     setShowNewForm(false);
   }, []);
   const updateCustomer = useCallback((id, data) => {
     setCustomers(prev => {
-      const u = prev.map(c => c.id===id ? {...c,...data} : c);
+      const u = prev.map(c => c.id===id ? {...c,...data, updatedAt: new Date().toISOString()} : c);
       saveCustomers(u);
       const updated = u.find(c => c.id === id);
       if (updated) supa.from('customers').upsert(dbCustomer(updated));
@@ -1944,94 +1981,178 @@ function AdminPanel({allProducts, categories, overrides, onSave, onDelete, onRes
 
 // ===== CUSTOMER COMPONENTS =====
 
-function CustomerListTab({customers, activeCustomerId, onSelect, onUpdate, onDelete, onNew}) {
-  const [custSearch, setCustSearch] = useState('');
-  const [editingId, setEditingId] = useState(null);
+const STATUS_OPTIONS = ['見込み','商談中','見積中','建築申込','着工中','引渡済','完了'];
+const RANK_OPTIONS   = ['Aランク','Bランク','Cランク','Dランク'];
+const MONTH_OPTIONS  = Array.from({length:12},(_,i)=>`${i+1}月`).concat(['未定']);
+const SCORE_KEYS     = [{k:'jin',l:'人'},{k:'mono',l:'物'},{k:'kane',l:'金'},{k:'toki',l:'時'},{k:'teki',l:'敵'}];
+const SCORE_VALS     = ['○','△','×'];
 
-  const sorted = useMemo(() => {
-    const q = custSearch.toLowerCase();
+function scoreClass(v){ return v==='○'?'circle':v==='△'?'triangle':v==='×'?'cross':''; }
+function fmtDate(d){ return d ? d.slice(0,10).replace(/-/g,'/') : '—'; }
+function fmtDateTime(d){
+  if(!d) return '';
+  try{
+    const dt = new Date(d);
+    return `${dt.getFullYear()}/${String(dt.getMonth()+1).padStart(2,'0')}/${String(dt.getDate()).padStart(2,'0')} ${String(dt.getHours()).padStart(2,'0')}:${String(dt.getMinutes()).padStart(2,'0')}`;
+  }catch{return '';}
+}
+
+function CustomerListTab({customers, activeCustomerId, onSelect, onUpdate, onDelete, onNew}) {
+  const [search, setSearch]           = useState('');
+  const [filterOffice, setFilterOffice] = useState('全て');
+  const [filterStaff,  setFilterStaff]  = useState('全員');
+  const [filterStatus, setFilterStatus] = useState('全て');
+  const [filterRank,   setFilterRank]   = useState('全て');
+  const [filterMonth,  setFilterMonth]  = useState('全て');
+  const [editingId, setEditingId]     = useState(null);
+
+  const offices = useMemo(() => {
+    const s = new Set(customers.map(c=>c.office).filter(Boolean));
+    return [...Array.from(s).sort()];
+  }, [customers]);
+
+  const staffList = useMemo(() => {
+    const s = new Set(customers.map(c=>c.coordinator).filter(Boolean));
+    return ['全員',...Array.from(s).sort()];
+  }, [customers]);
+
+  const officeCount = useMemo(() => {
+    const m={};
+    customers.forEach(c=>{ const o=c.office||''; m[o]=(m[o]||0)+1; });
+    return m;
+  }, [customers]);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
     return [...customers]
-      .filter(c => !q || c.name1?.toLowerCase().includes(q) || c.name2?.toLowerCase().includes(q) || c.property?.toLowerCase().includes(q))
-      .sort((a,b) => (a.name1||'').localeCompare(b.name1||'', 'ja'));
-  }, [customers, custSearch]);
+      .filter(c => {
+        if(filterOffice!=='全て' && c.office!==filterOffice) return false;
+        if(filterStaff!=='全員' && c.coordinator!==filterStaff) return false;
+        if(filterStatus!=='全て' && c.status!==filterStatus) return false;
+        if(filterRank!=='全て' && c.rank!==filterRank) return false;
+        if(filterMonth!=='全て' && c.prospectMonth!==filterMonth) return false;
+        if(q && !c.name1?.toLowerCase().includes(q) && !c.name2?.toLowerCase().includes(q) && !c.coordinator?.toLowerCase().includes(q) && !c.property?.toLowerCase().includes(q)) return false;
+        return true;
+      })
+      .sort((a,b)=>(b.updatedAt||b.createdAt||'').localeCompare(a.updatedAt||a.createdAt||''));
+  }, [customers, search, filterOffice, filterStaff, filterStatus, filterRank, filterMonth]);
 
   return (
     <div className="cust-tab">
-      <div className="cust-toolbar">
-        <input className="cust-search" placeholder="🔍 お客様名・物件名で検索..." value={custSearch} onChange={e=>setCustSearch(e.target.value)}/>
-        <span className="cust-count">{sorted.length}件</span>
-        <button className="cust-new-btn" onClick={onNew}>＋ 新規お客様登録</button>
+      {/* Office tabs */}
+      <div className="cl-office-tabs">
+        <button className={`cl-office-tab${filterOffice==='全て'?' active-dark':''}`} onClick={()=>setFilterOffice('全て')}>
+          全て ({customers.length})
+        </button>
+        {offices.map(o=>(
+          <button key={o} className={`cl-office-tab${filterOffice===o?' active-dark':''}`} onClick={()=>setFilterOffice(o)}>
+            {o} ({officeCount[o]||0})
+          </button>
+        ))}
+        <div style={{flex:1}}/>
+        <button className="cust-new-btn" onClick={onNew}>＋ 新規登録</button>
       </div>
-      {sorted.length === 0 ? (
-        <div className="cust-empty">
-          <div className="icon">👥</div>
-          <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>
-            {custSearch ? '該当するお客様が見つかりません' : 'お客様がまだ登録されていません'}
+      {/* Search */}
+      <div className="cl-search-area">
+        <input className="cl-search" placeholder="お客様名・担当者名で検索..." value={search} onChange={e=>setSearch(e.target.value)}/>
+      </div>
+      {/* Filters */}
+      <div className="cl-filters">
+        <span className="cl-filter-label">フィルター</span>
+        <span style={{color:'var(--muted)'}}>担当</span>
+        <select className="cl-filter-sel" value={filterStaff} onChange={e=>setFilterStaff(e.target.value)}>
+          {staffList.map(s=><option key={s}>{s}</option>)}
+        </select>
+        <span style={{color:'var(--muted)'}}>状態</span>
+        <select className="cl-filter-sel" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
+          <option>全て</option>{STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
+        </select>
+        <span style={{color:'var(--muted)'}}>ランク</span>
+        <select className="cl-filter-sel" value={filterRank} onChange={e=>setFilterRank(e.target.value)}>
+          <option>全て</option>{RANK_OPTIONS.map(r=><option key={r}>{r}</option>)}
+        </select>
+        <span style={{color:'var(--muted)'}}>見込み月</span>
+        <select className="cl-filter-sel" value={filterMonth} onChange={e=>setFilterMonth(e.target.value)}>
+          <option>全て</option>{MONTH_OPTIONS.map(m=><option key={m}>{m}</option>)}
+        </select>
+      </div>
+      {/* List */}
+      <div className="cl-body">
+        <div className="cl-count">{filtered.length} 件のカルテ</div>
+        {filtered.length === 0 ? (
+          <div className="cust-empty">
+            <div className="icon">👥</div>
+            <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>
+              {search||filterOffice!=='全て'||filterStatus!=='全て'||filterRank!=='全て'||filterMonth!=='全て'
+                ? '該当するお客様が見つかりません' : 'お客様がまだ登録されていません'}
+            </div>
+            {!search && filterOffice==='全て' && <div style={{fontSize:12,marginTop:8}}>「＋ 新規登録」からお客様を追加してください</div>}
           </div>
-          {!custSearch && <div style={{fontSize:12,marginTop:8}}>「＋ 新規お客様登録」からお客様を追加してください</div>}
-        </div>
-      ) : (
-        <div className="cust-grid">
-          {sorted.map(c => (
-            editingId === c.id
-              ? <CustomerEditCard key={c.id} customer={c} onSave={(data)=>{onUpdate(c.id,data);setEditingId(null);}} onCancel={()=>setEditingId(null)}/>
-              : <CustomerCard key={c.id} customer={c} isActive={c.id===activeCustomerId} onSelect={onSelect} onEdit={()=>setEditingId(c.id)} onDelete={onDelete}/>
-          ))}
-        </div>
-      )}
-    </div>
-  );
-}
-
-function CustomerCard({customer:c, isActive, onSelect, onEdit, onDelete}) {
-  const [confirmData, setConfirmData] = React.useState(false);
-  function handleDataDelete() {
-    deleteCustomerAllData(c.id);
-    setConfirmData(false);
-  }
-  return (
-    <div className={`cust-card${isActive?' active-cust':''}`}>
-      {isActive && <div className="cust-active-badge">選択中</div>}
-      <div className="cust-card-names">
-        {c.name1} 様{c.name2 && <span className="name2">/ {c.name2} 様</span>}
-      </div>
-      {c.property && (
-        <div className="cust-card-prop"><span className="prop-icon">🏠</span>{c.property}</div>
-      )}
-      <div className="cust-card-meta">
-        {c.coordinator && <span>👤 {c.coordinator}</span>}
-        <span>📅 {c.createdAt}</span>
-        {c.cart && c.cart.length > 0 && <span>🛒 {c.cart.length}件選択済</span>}
-      </div>
-      {confirmData && (
-        <div style={{background:'#fff8f8',border:'1px solid #fc8181',borderRadius:'6px',padding:'8px',marginBottom:'6px',fontSize:'11px'}}>
-          <div style={{fontWeight:700,color:'#c53030',marginBottom:'4px'}}>⚠ 仕様書・外装データを削除しますか？</div>
-          <div style={{color:'#4a5568',marginBottom:'6px'}}>お客様情報・商品選択は残ります</div>
-          <div style={{display:'flex',gap:'6px'}}>
-            <button style={{padding:'2px 8px',background:'#c53030',color:'#fff',border:'none',borderRadius:'3px',cursor:'pointer',fontSize:'11px'}} onClick={handleDataDelete}>削除する</button>
-            <button style={{padding:'2px 8px',background:'#e2e8f0',color:'#4a5568',border:'none',borderRadius:'3px',cursor:'pointer',fontSize:'11px'}} onClick={()=>setConfirmData(false)}>キャンセル</button>
-          </div>
-        </div>
-      )}
-      <div className="cust-card-actions">
-        <button className="ca-btn select" onClick={()=>onSelect(c)}>商品選択へ →</button>
-        <button className="ca-btn edit" onClick={onEdit}>編集</button>
-        <button className="ca-btn delete" onClick={()=>onDelete(c)}>削除</button>
-        <button className="ca-btn" style={{background:'#fef3c7',color:'#92400e',border:'1px solid #f6d860',fontSize:'10px',padding:'4px 6px'}} onClick={()=>setConfirmData(true)} title="仕様書・外装データのみ削除">🗑 データ削除</button>
+        ) : filtered.map(c => (
+          editingId===c.id
+            ? <CustomerEditCard key={c.id} customer={c} onSave={(data)=>{onUpdate(c.id,data);setEditingId(null);}} onCancel={()=>setEditingId(null)}/>
+            : <CustomerRow key={c.id} customer={c} isActive={c.id===activeCustomerId} onSelect={onSelect} onEdit={()=>setEditingId(c.id)} onDelete={onDelete}/>
+        ))}
       </div>
     </div>
   );
 }
 
-function CustomerEditCard({customer:c, onSave, onCancel}) {
-  const [form, setForm] = useState({name1:c.name1||'', name2:c.name2||'', property:c.property||'', coordinator:c.coordinator||'', address:c.address||''});
-  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+function CustomerRow({customer:c, isActive, onSelect, onEdit, onDelete}) {
   return (
-    <div className="cust-edit-form">
-      <div style={{fontSize:12,fontWeight:700,color:'var(--blue)',marginBottom:10}}>✏️ 編集中</div>
+    <div className={`cl-row${isActive?' active-cust':''}`}>
+      <div className="cl-row-main">
+        <div className="cl-row-top">
+          <span className="cl-row-name">{c.name1}{c.name2?` / ${c.name2}`:''} 様</span>
+          {c.office && <span className="cl-tag office">{c.office}</span>}
+          {c.status && <span className="cl-tag status">{c.status}</span>}
+          {c.rank && <span className="cl-tag rank">{c.rank}</span>}
+          {c.prospectMonth && <span className="cl-tag month">見込み {c.prospectMonth}</span>}
+        </div>
+        <div className="cl-row-meta">
+          <span>担当: {c.coordinator||'—'}</span>
+          <span>作成: {fmtDate(c.createdAt)}</span>
+          {c.updatedAt && <span>更新: {fmtDateTime(c.updatedAt)}</span>}
+          {c.property && <span>物件: {c.property}</span>}
+        </div>
+        <div className="cl-scores">
+          {SCORE_KEYS.map(({k,l})=>{
+            const v=c[k]||'';
+            return <span key={k} className={`score-badge${v?' '+scoreClass(v):''}`}>{l}{v||'—'}</span>;
+          })}
+        </div>
+      </div>
+      <div className="cl-row-actions">
+        <button className="cl-open-btn" onClick={()=>onSelect(c)}>✎ 開く</button>
+        <button className="cl-edit-btn" onClick={onEdit}>編集</button>
+        <button className="cl-del-btn" onClick={()=>onDelete(c)}>🗑</button>
+      </div>
+    </div>
+  );
+}
+
+function ScoreSel({label, value, onChange}) {
+  return (
+    <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:4}}>
+      <span style={{fontSize:12,fontWeight:700,color:'var(--muted)',width:20}}>{label}</span>
+      <div className="score-sel-row">
+        {SCORE_VALS.map(v=>(
+          <button key={v} type="button"
+            className={`score-sel-btn${value===v?(' sel-'+scoreClass(v)):''}`}
+            onClick={()=>onChange(value===v?'':v)}>{v}</button>
+        ))}
+        {value && <button type="button" style={{fontSize:11,background:'none',border:'none',color:'#aaa',cursor:'pointer'}} onClick={()=>onChange('')}>クリア</button>}
+      </div>
+    </div>
+  );
+}
+
+function CustomerForm({form, set}) {
+  return (
+    <>
       <div className="form-row">
         <div className="form-group">
-          <label className="form-label">お客様氏名①</label>
+          <label className="form-label">お客様氏名①　<span style={{color:'var(--red)'}}>*</span></label>
           <input className="form-input" value={form.name1} onChange={e=>set('name1',e.target.value)} placeholder="例：山田 太郎"/>
         </div>
         <div className="form-group">
@@ -2039,18 +2160,73 @@ function CustomerEditCard({customer:c, onSave, onCancel}) {
           <input className="form-input" value={form.name2} onChange={e=>set('name2',e.target.value)} placeholder="例：山田 花子"/>
         </div>
       </div>
-      <div className="form-group">
-        <label className="form-label">物件名</label>
-        <input className="form-input" value={form.property} onChange={e=>set('property',e.target.value)} placeholder="例：〇〇町△△丁目"/>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">物件名</label>
+          <input className="form-input" value={form.property} onChange={e=>set('property',e.target.value)} placeholder="例：〇〇町△△丁目"/>
+        </div>
+        <div className="form-group">
+          <label className="form-label">事務所</label>
+          <input className="form-input" value={form.office} onChange={e=>set('office',e.target.value)} placeholder="例：本社、豊中オフィス"/>
+        </div>
       </div>
-      <div className="form-group">
-        <label className="form-label">建築地住所（地番）</label>
-        <input className="form-input" value={form.address} onChange={e=>set('address',e.target.value)} placeholder="例：愛知県名古屋市〇〇区△△町1-2-3"/>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">担当コーディネータ</label>
+          <input className="form-input" value={form.coordinator} onChange={e=>set('coordinator',e.target.value)} placeholder="担当者名"/>
+        </div>
+        <div className="form-group">
+          <label className="form-label">建築地住所</label>
+          <input className="form-input" value={form.address} onChange={e=>set('address',e.target.value)} placeholder="例：大阪府豊中市〇〇"/>
+        </div>
       </div>
-      <div className="form-group">
-        <label className="form-label">担当コーディネータ</label>
-        <input className="form-input" value={form.coordinator} onChange={e=>set('coordinator',e.target.value)} placeholder="担当者名"/>
+      <div className="form-row">
+        <div className="form-group">
+          <label className="form-label">状態</label>
+          <select className="form-input" value={form.status} onChange={e=>set('status',e.target.value)}>
+            <option value="">-- 選択 --</option>
+            {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">ランク</label>
+          <select className="form-input" value={form.rank} onChange={e=>set('rank',e.target.value)}>
+            <option value="">-- 選択 --</option>
+            {RANK_OPTIONS.map(r=><option key={r}>{r}</option>)}
+          </select>
+        </div>
+        <div className="form-group">
+          <label className="form-label">見込み月</label>
+          <select className="form-input" value={form.prospectMonth} onChange={e=>set('prospectMonth',e.target.value)}>
+            <option value="">-- 選択 --</option>
+            {MONTH_OPTIONS.map(m=><option key={m}>{m}</option>)}
+          </select>
+        </div>
       </div>
+      <div style={{marginBottom:8}}>
+        <label className="form-label" style={{marginBottom:6,display:'block'}}>人・物・金・時・敵（進捗評価）</label>
+        <div style={{display:'flex',gap:16,flexWrap:'wrap'}}>
+          {SCORE_KEYS.map(({k,l})=>(
+            <ScoreSel key={k} label={l} value={form[k]||''} onChange={v=>set(k,v)}/>
+          ))}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function CustomerEditCard({customer:c, onSave, onCancel}) {
+  const [form, setForm] = useState({
+    name1:c.name1||'', name2:c.name2||'', property:c.property||'',
+    coordinator:c.coordinator||'', address:c.address||'',
+    office:c.office||'', status:c.status||'', rank:c.rank||'', prospectMonth:c.prospectMonth||'',
+    jin:c.jin||'', mono:c.mono||'', kane:c.kane||'', toki:c.toki||'', teki:c.teki||''
+  });
+  const set = (k,v) => setForm(f=>({...f,[k]:v}));
+  return (
+    <div className="cust-edit-form">
+      <div style={{fontSize:12,fontWeight:700,color:'var(--blue)',marginBottom:10}}>✏️ 編集中：{c.name1} 様</div>
+      <CustomerForm form={form} set={set}/>
       <div className="modal-actions">
         <button className="btn-secondary" onClick={onCancel}>キャンセル</button>
         <button className="btn-primary" onClick={()=>form.name1.trim()&&onSave(form)} disabled={!form.name1.trim()}>保存</button>
@@ -2060,34 +2236,17 @@ function CustomerEditCard({customer:c, onSave, onCancel}) {
 }
 
 function CustomerFormModal({onSave, onClose}) {
-  const [form, setForm] = useState({name1:'', name2:'', property:'', coordinator:'', address:''});
+  const [form, setForm] = useState({
+    name1:'', name2:'', property:'', coordinator:'', address:'',
+    office:'', status:'', rank:'', prospectMonth:'',
+    jin:'', mono:'', kane:'', toki:'', teki:''
+  });
   const set = (k,v) => setForm(f=>({...f,[k]:v}));
   return (
     <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e=>e.stopPropagation()}>
+      <div className="modal" style={{maxWidth:600}} onClick={e=>e.stopPropagation()}>
         <div className="modal-title">👤 新規お客様登録</div>
-        <div className="form-row">
-          <div className="form-group">
-            <label className="form-label">お客様氏名①　<span style={{color:'var(--red)'}}>*</span></label>
-            <input className="form-input" value={form.name1} onChange={e=>set('name1',e.target.value)} placeholder="例：山田 太郎" autoFocus/>
-          </div>
-          <div className="form-group">
-            <label className="form-label">お客様氏名②（共有名義）</label>
-            <input className="form-input" value={form.name2} onChange={e=>set('name2',e.target.value)} placeholder="例：山田 花子"/>
-          </div>
-        </div>
-        <div className="form-group">
-          <label className="form-label">物件名</label>
-          <input className="form-input" value={form.property} onChange={e=>set('property',e.target.value)} placeholder="例：〇〇町△△丁目 新築"/>
-        </div>
-        <div className="form-group">
-          <label className="form-label">建築地住所（地番）</label>
-          <input className="form-input" value={form.address} onChange={e=>set('address',e.target.value)} placeholder="例：愛知県名古屋市〇〇区△△町1-2-3"/>
-        </div>
-        <div className="form-group">
-          <label className="form-label">担当コーディネータ</label>
-          <input className="form-input" value={form.coordinator} onChange={e=>set('coordinator',e.target.value)} placeholder="担当者名"/>
-        </div>
+        <CustomerForm form={form} set={set}/>
         <div className="modal-actions">
           <button className="btn-secondary" onClick={onClose}>キャンセル</button>
           <button className="btn-primary" onClick={()=>form.name1.trim()&&onSave(form)} disabled={!form.name1.trim()}
