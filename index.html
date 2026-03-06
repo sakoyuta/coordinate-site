@@ -1331,7 +1331,7 @@ function App() {
                 <div key={c.id} className={`sidebar-item${activeCat===c.id?' active':''}`} onClick={()=>setActiveCat(c.id)}>
                   <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
                   {done
-                    ? <span className={skipped ? 'sel-badge-skip' : 'sel-badge-done'}>{skipped ? 'SKIP' : '✓'}</span>
+                    ? <span className={skipped ? 'sel-badge-skip' : 'sel-badge-done'}>{skipped ? '☑' : '✓'}</span>
                     : <span className="ct">{catCounts[c.id]||0}</span>
                   }
                 </div>
@@ -1392,7 +1392,7 @@ function App() {
                             color: skipped ? '#e67e22' : '#6ee7b7',
                             background: skipped ? 'rgba(230,126,34,.2)' : 'rgba(39,174,96,.25)',
                             padding:'1px 8px',borderRadius:8}}>
-                            {skipped ? 'SKIP' : '✓ 選択済'}
+                            {skipped ? '☑ 選択しない' : '✓ 選択済'}
                           </span>
                         )}
                         <button className={`skip-btn${skipped?' skipped':''}`}
