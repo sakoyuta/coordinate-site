@@ -64,6 +64,8 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .search-input{flex:1;padding:7px 12px;border:1px solid var(--border);border-radius:6px;font-size:13px;outline:none;transition:border .2s}
 .search-input:focus{border-color:var(--blue)}
 .filter-tags{display:flex;gap:6px}
+.save-draft-btn{padding:5px 12px;border-radius:6px;border:1px solid var(--blue);background:#f0f5ff;color:var(--blue);font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.save-draft-btn:hover{background:var(--blue);color:#fff}
 .ftag{padding:4px 10px;border-radius:12px;border:1px solid var(--border);background:transparent;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
 .ftag.active{background:var(--text);color:#fff;border-color:var(--text)}
 .ftag.std.active{background:var(--green);border-color:var(--green)}
@@ -702,7 +704,7 @@ async function syncCustomerBlobsFromSupa(custId) {
   const {data} = await supa.from('customer_blobs').select().eq('customer_id', custId);
   if (!data) return;
   const keyMap = { spec:'gc_spec_', schedule:'gc_sched_', finance:'gc_finance_',
-    facade:'gc_facade_', skip_cats:'gc_skip_', karte:'gc_karte_' };
+    facade:'gc_facade_', skip_cats:'gc_skip_', karte:'gc_karte_', cart:'gc_cart_' };
   data.forEach(blob => {
     const prefix = keyMap[blob.type];
     if (prefix) localStorage.setItem(prefix + custId, JSON.stringify(blob.data));
@@ -793,6 +795,11 @@ function loadSkipCats(cid) { try { return JSON.parse(localStorage.getItem('gc_sk
 function saveSkipCats(cid, obj) {
   localStorage.setItem('gc_skip_'+cid, JSON.stringify(obj));
   supa.from('customer_blobs').upsert({customer_id:cid, type:'skip_cats', data:obj});
+}
+function loadSavedCart(cid) { try { const v=localStorage.getItem('gc_cart_'+cid); return v ? JSON.parse(v) : null; } catch { return null; } }
+function saveCartBlob(cid, cartData) {
+  localStorage.setItem('gc_cart_'+cid, JSON.stringify(cartData));
+  supa.from('customer_blobs').upsert({customer_id:cid, type:'cart', data:cartData});
 }
 
 // Spec sheet edits (per customer)
@@ -1093,15 +1100,15 @@ const CATEGORIES = [
 
   {id:'detail-header', name:'DETAIL（内部）', group:'header-detail', cats:[]},
 
-  {id:'tenjou',     name:'天井・壁',           group:'detail', cats:['tenjou','cross','accent-panel']},
-  {id:'yuka',       name:'床材',              group:'detail', cats:['yuka','cf-ft','carpet','tile-naisou','tatami']},
+  {id:'tenjou',     name:'天井・壁',           group:'detail', cats:['tenjou','cross','accent-panel','accent-tile']},
+  {id:'yuka',       name:'床材',              group:'detail', cats:['yuka','cf-ft','carpet','tile-naisou']},
   {id:'kaidan',     name:'階段',              group:'detail', cats:['kaidan']},
   {id:'mado-nai',   name:'窓廻り',            group:'detail', cats:['madodai','shitsunai-mado','koushi']},
   {id:'door',       name:'室内ドア・建具',     group:'detail', cats:['door']},
   {id:'shunou',     name:'収納',              group:'detail', cats:['shunou','kutsubako','toilet-shunou']},
   {id:'setsubi',    name:'水まわり・設備',     group:'detail', cats:['slop','tearai','monohoshi','tenken']},
   {id:'denki',      name:'電気・空調',         group:'detail', cats:['switch','aircon']},
-  {id:'zosaku',     name:'造作・その他',       group:'detail', cats:['niche','hokyou','counter','genkan-kamachi','accent-tile']},
+  {id:'zosaku-koji',name:'造作工事',           group:'detail', cats:['tatami','niche','hokyou','counter','genkan-kamachi']},
 ];
 
 function fmtPrice(n) {
@@ -1189,6 +1196,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const [skipCats, setSkipCats] = useState({});
+  const [cartSaved, setCartSaved] = useState(false);
   const [overrides, setOverrides] = useState(loadOverrides);
   const [customProds, setCustomProds] = useState(loadCustomProds);
 
@@ -1286,6 +1294,9 @@ function App() {
     // Sync per-customer blobs from Supabase → localStorage, then load
     await syncCustomerBlobsFromSupa(cust.id);
     setSkipCats(loadSkipCats(cust.id));
+    // 途中保存されたcartがあればそちらを優先
+    const savedCart = loadSavedCart(cust.id);
+    if (savedCart !== null) setCart(savedCart);
     setTab('select');
   }, []);
   const toggleSkip = useCallback((catId) => {
@@ -1571,6 +1582,11 @@ function App() {
                   <button key={v} className={`ftag ${v}${tagFilter===v?' active':''}`} onClick={()=>setTagFilter(v)}>{l}</button>
                 ))}
               </div>
+              <button className="save-draft-btn" onClick={()=>{
+                if(activeCustomerId){ saveCartBlob(activeCustomerId, cart); saveSkipCats(activeCustomerId, skipCats); setCartSaved(true); setTimeout(()=>setCartSaved(false),2500); }
+              }}>
+                {cartSaved ? '✓ 保存済' : '💾 途中保存'}
+              </button>
             </div>
 
             {/* 商品リスト */}
