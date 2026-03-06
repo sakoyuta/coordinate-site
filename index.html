@@ -65,7 +65,8 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .search-input:focus{border-color:var(--blue)}
 .filter-tags{display:flex;gap:6px}
 .save-draft-btn{padding:4px 10px;border-radius:4px;border:1px solid var(--blue);background:#f0f5ff;color:var(--blue);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .15s;flex-shrink:0}
-.save-draft-btn:hover{background:var(--blue);color:#fff}
+.save-draft-btn:hover:not(:disabled){background:var(--blue);color:#fff}
+.save-draft-btn:disabled{opacity:.7;cursor:default}
 .ftag{padding:4px 10px;border-radius:12px;border:1px solid var(--border);background:transparent;font-size:11px;font-weight:600;cursor:pointer;transition:all .15s}
 .ftag.active{background:var(--text);color:#fff;border-color:var(--text)}
 .ftag.std.active{background:var(--green);border-color:var(--green)}
@@ -1292,12 +1293,12 @@ function App() {
     setActiveCustomerId(cust.id);
     setCart(cust.cart || []);
     setCustomerDate(cust.createdAt || new Date().toISOString().slice(0,10));
-    // Sync per-customer blobs from Supabase → localStorage, then load
+    // Supabaseから最新のcartを直接取得（他端末での変更も反映）
+    const {data: fresh} = await supa.from('customers').select('cart').eq('id', cust.id).single();
+    if (fresh?.cart?.length) setCart(fresh.cart);
+    // Sync per-customer blobs from Supabase → localStorage
     await syncCustomerBlobsFromSupa(cust.id);
     setSkipCats(loadSkipCats(cust.id));
-    // 途中保存されたcartがあればそちらを優先
-    const savedCart = loadSavedCart(cust.id);
-    if (savedCart !== null) setCart(savedCart);
     setTab('select');
   }, []);
   const toggleSkip = useCallback((catId) => {
@@ -1583,10 +1584,18 @@ function App() {
                   <button key={v} className={`ftag ${v}${tagFilter===v?' active':''}`} onClick={()=>setTagFilter(v)}>{l}</button>
                 ))}
               </div>
-              <button className="save-draft-btn" onClick={()=>{
-                if(activeCustomerId){ saveCartBlob(activeCustomerId, cart); saveSkipCats(activeCustomerId, skipCats); setCartSaved(true); setTimeout(()=>setCartSaved(false),2500); }
+              <button className="save-draft-btn" disabled={cartSaved==='saving'} onClick={async()=>{
+                if(!activeCustomerId) return;
+                setCartSaved('saving');
+                const {error} = await supa.from('customers').update({cart}).eq('id', activeCustomerId);
+                saveSkipCats(activeCustomerId, skipCats);
+                if(!error){
+                  setCustomers(prev => { const u=prev.map(c=>c.id===activeCustomerId?{...c,cart}:c); saveCustomers(u); return u; });
+                }
+                setCartSaved(error ? 'error' : 'done');
+                setTimeout(()=>setCartSaved(''), 3000);
               }}>
-                {cartSaved ? '✓ 保存済' : '💾 途中保存'}
+                {cartSaved==='saving' ? '保存中...' : cartSaved==='done' ? '✓ 保存済' : cartSaved==='error' ? '⚠ 失敗' : '途中保存'}
               </button>
             </div>
 
