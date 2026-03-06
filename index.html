@@ -684,7 +684,7 @@ async function syncCustomerBlobsFromSupa(custId) {
   const {data} = await supa.from('customer_blobs').select().eq('customer_id', custId);
   if (!data) return;
   const keyMap = { spec:'gc_spec_', schedule:'gc_sched_', finance:'gc_finance_',
-    facade:'gc_facade_', skip_cats:'gc_skip_' };
+    facade:'gc_facade_', skip_cats:'gc_skip_', karte:'gc_karte_' };
   data.forEach(blob => {
     const prefix = keyMap[blob.type];
     if (prefix) localStorage.setItem(prefix + custId, JSON.stringify(blob.data));
@@ -1667,6 +1667,7 @@ function App() {
         <KarteTab
           key={activeCustomer?.id || 'default'}
           activeCustomer={activeCustomer}
+          onUpdate={updateCustomer}
         />
       )}
 
@@ -4340,7 +4341,12 @@ function FinancePlanTab({activeCustomer, cart}) {
 
 // ===== KARTE TAB =====
 function loadKarteData(cid){try{const v=localStorage.getItem('gc_karte_'+cid);if(!v)return defaultKarteData();return{...defaultKarteData(),...JSON.parse(v)};}catch{return defaultKarteData();}}
-function saveKarteData(cid,d){localStorage.setItem('gc_karte_'+cid,JSON.stringify(d));}
+function saveKarteData(cid,d){
+  localStorage.setItem('gc_karte_'+cid,JSON.stringify(d));
+}
+function saveKarteToSupa(cid,d){
+  supa.from('customer_blobs').upsert({customer_id:cid,type:'karte',data:d});
+}
 function defaultKarteData(){return{
   furigana1:'',furigana2:'',age1:'',age2:'',income1:'',income2:'',years1:'',years2:'',
   family:[
@@ -4367,14 +4373,21 @@ function defaultKarteData(){return{
   rank:'',contractTarget:'',
 };}
 
-function KarteTab({activeCustomer}){
+function KarteTab({activeCustomer, onUpdate}){
   const custId = activeCustomer?.id || 'default';
   const [sub, setSub] = React.useState('flow');
   const [karte, setKarte] = React.useState(()=>loadKarteData(custId));
+  const [savedMsg, setSavedMsg] = React.useState('');
 
   const save = React.useCallback((key,val) => {
     setKarte(prev=>{const next={...prev,[key]:val};saveKarteData(custId,next);return next;});
   }, [custId]);
+
+  const handleTempSave = React.useCallback(() => {
+    saveKarteToSupa(custId, karte);
+    setSavedMsg('保存しました');
+    setTimeout(()=>setSavedMsg(''), 2500);
+  }, [custId, karte]);
   const saveFamily = React.useCallback((idx,key,val) => {
     setKarte(prev=>{
       const fam=prev.family.map((f,i)=>i===idx?{...f,[key]:val}:f);
@@ -4422,10 +4435,16 @@ function KarteTab({activeCustomer}){
 
   return (
     <div className="karte-wrap">
-      <div className="karte-subtabs">
+      <div className="karte-subtabs" style={{display:'flex',alignItems:'center',gap:0}}>
         {SUBTABS.map(s=>(
           <button key={s.id} className={`karte-subtab${sub===s.id?' active':''}`} onClick={()=>setSub(s.id)}>{s.label}</button>
         ))}
+        <div style={{flex:1}}/>
+        {savedMsg && <span style={{fontSize:11,color:'#16a34a',fontWeight:600,marginRight:8}}>{savedMsg}</span>}
+        <button onClick={handleTempSave}
+          style={{padding:'5px 14px',background:'#16a34a',color:'#fff',border:'none',borderRadius:6,fontSize:12,fontWeight:700,cursor:'pointer',marginRight:8,whiteSpace:'nowrap'}}>
+          💾 一時保存
+        </button>
       </div>
       <div className="karte-body">
 
@@ -4505,6 +4524,43 @@ function KarteTab({activeCustomer}){
         {/* 総合ヒアリング */}
         {sub==='general' && (
           <div>
+            {/* 進捗ステータス（顧客情報と連動） */}
+            {activeCustomer && (
+              <div className="k-sec" style={{background:'#f8faff',border:'1.5px solid #c5d8f8',borderRadius:8,marginBottom:12}}>
+                <div className="k-sec-hdr" style={{background:'#1a2332',color:'#fff',borderRadius:'6px 6px 0 0'}}>📊 進捗ステータス</div>
+                <div style={{padding:'12px 14px'}}>
+                  <div style={{display:'flex',gap:12,flexWrap:'wrap',marginBottom:12}}>
+                    <div style={{flex:1,minWidth:120}}>
+                      <div className="k-label" style={{marginBottom:4}}>状態</div>
+                      <select className="k-inp" style={{width:'100%'}} value={activeCustomer.status||''} onChange={e=>onUpdate&&onUpdate(activeCustomer.id,{status:e.target.value})}>
+                        <option value="">-- 選択 --</option>
+                        {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
+                      </select>
+                    </div>
+                    <div style={{flex:1,minWidth:120}}>
+                      <div className="k-label" style={{marginBottom:4}}>ランク</div>
+                      <select className="k-inp" style={{width:'100%'}} value={activeCustomer.rank||''} onChange={e=>onUpdate&&onUpdate(activeCustomer.id,{rank:e.target.value})}>
+                        <option value="">-- 選択 --</option>
+                        {RANK_OPTIONS.map(r=><option key={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    <div style={{flex:1,minWidth:120}}>
+                      <div className="k-label" style={{marginBottom:4}}>見込み月</div>
+                      <select className="k-inp" style={{width:'100%'}} value={activeCustomer.prospectMonth||''} onChange={e=>onUpdate&&onUpdate(activeCustomer.id,{prospectMonth:e.target.value})}>
+                        <option value="">-- 選択 --</option>
+                        {MONTH_OPTIONS.map(m=><option key={m}>{m}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="k-label" style={{marginBottom:8}}>人・物・金・時・敵（進捗評価）</div>
+                  <div style={{display:'flex',gap:16,flexWrap:'wrap'}}>
+                    {SCORE_KEYS.map(({k,l})=>(
+                      <ScoreSel key={k} label={l} value={activeCustomer[k]||''} onChange={v=>onUpdate&&onUpdate(activeCustomer.id,{[k]:v})}/>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
             <div className="k-sec">
               <div className="k-sec-hdr">🏠 生活情報</div>
               <div className="k-grid">
