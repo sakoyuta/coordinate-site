@@ -7,6 +7,13 @@
 <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
 <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
 <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supa = window.supabase.createClient(
+  'https://vpauolmeacyppqwlqvgw.supabase.co',
+  'sb_publishable_IOCl5IQoTzi3VOrhH9Ef2A_9Xug1R_8'
+);
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -613,12 +620,38 @@ const { useState, useMemo, useCallback, useEffect } = React;
 function loadCustomers() {
   try { return JSON.parse(localStorage.getItem('gc_customers') || '[]'); } catch { return []; }
 }
-function saveCustomers(list) { localStorage.setItem('gc_customers', JSON.stringify(list)); }
+function saveCustomers(list) {
+  localStorage.setItem('gc_customers', JSON.stringify(list));
+}
 function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// Supabase helper: convert customer object ↔ DB row
+function dbCustomer(c) {
+  return { id: c.id, name1: c.name1||'', name2: c.name2||'', property: c.property||'',
+    coordinator: c.coordinator||'', created_at_str: c.createdAt||'', cart: c.cart||[] };
+}
+function normalizeCustomer(row) {
+  return { id: row.id, name1: row.name1||'', name2: row.name2||'', property: row.property||'',
+    coordinator: row.coordinator||'', createdAt: row.created_at_str||'', cart: row.cart||[] };
+}
+// Sync all per-customer blobs from Supabase → localStorage
+async function syncCustomerBlobsFromSupa(custId) {
+  const {data} = await supa.from('customer_blobs').select().eq('customer_id', custId);
+  if (!data) return;
+  const keyMap = { spec:'gc_spec_', schedule:'gc_sched_', finance:'gc_finance_',
+    facade:'gc_facade_', skip_cats:'gc_skip_' };
+  data.forEach(blob => {
+    const prefix = keyMap[blob.type];
+    if (prefix) localStorage.setItem(prefix + custId, JSON.stringify(blob.data));
+  });
+}
 
 // ===== SCHEDULE STORAGE =====
 function loadScheduleData(cid){try{const v=localStorage.getItem('gc_sched_'+cid);return v?JSON.parse(v):defaultScheduleData();}catch{return defaultScheduleData();}}
-function saveScheduleData(cid,d){localStorage.setItem('gc_sched_'+cid,JSON.stringify(d));}
+function saveScheduleData(cid,d){
+  localStorage.setItem('gc_sched_'+cid,JSON.stringify(d));
+  supa.from('customer_blobs').upsert({customer_id:cid,type:'schedule',data:d});
+}
 function defaultScheduleData(){
   return {
     startDate:'',
@@ -632,11 +665,19 @@ function defaultScheduleData(){
 function loadOverrides() {
   try { return JSON.parse(localStorage.getItem('gc_prod_overrides') || '{}'); } catch { return {}; }
 }
-function saveOverrides(obj) { localStorage.setItem('gc_prod_overrides', JSON.stringify(obj)); }
+function saveOverrides(obj) {
+  localStorage.setItem('gc_prod_overrides', JSON.stringify(obj));
+  supa.from('prod_overrides').upsert({id:1, data:obj});
+}
 function loadCustomProds() {
   try { return JSON.parse(localStorage.getItem('gc_prod_custom') || '[]'); } catch { return []; }
 }
-function saveCustomProds(arr) { localStorage.setItem('gc_prod_custom', JSON.stringify(arr)); }
+function saveCustomProds(arr) {
+  localStorage.setItem('gc_prod_custom', JSON.stringify(arr));
+  supa.from('custom_products').delete().neq('id','__x__').then(()=>{
+    if(arr.length) supa.from('custom_products').insert(arr.map(p=>({id:p.id,data:p})));
+  });
+}
 
 // Storage management utilities
 function getStorageUsage() {
@@ -686,20 +727,29 @@ function deleteCustomerAllData(custId) {
 
 // Skip-cats (選択しない) per customer
 function loadSkipCats(cid) { try { return JSON.parse(localStorage.getItem('gc_skip_'+cid)||'{}'); } catch { return {}; } }
-function saveSkipCats(cid, obj) { localStorage.setItem('gc_skip_'+cid, JSON.stringify(obj)); }
+function saveSkipCats(cid, obj) {
+  localStorage.setItem('gc_skip_'+cid, JSON.stringify(obj));
+  supa.from('customer_blobs').upsert({customer_id:cid, type:'skip_cats', data:obj});
+}
 
 // Spec sheet edits (per customer)
 function loadSpecEdits(custId) {
   try { return JSON.parse(localStorage.getItem('gc_spec_'+custId) || '{}'); } catch { return {}; }
 }
-function saveSpecEdits(custId, data) { localStorage.setItem('gc_spec_'+custId, JSON.stringify(data)); }
+function saveSpecEdits(custId, data) {
+  localStorage.setItem('gc_spec_'+custId, JSON.stringify(data));
+  supa.from('customer_blobs').upsert({customer_id:custId, type:'spec', data});
+}
 
 const SpecEditsCtx = React.createContext({});
 const SpecEditModeCtx = React.createContext(false);
 
 const DEFAULT_ROOM_OPTS = ['','玄関','LDK','リビング','ダイニング','キッチン','和室','洋室','洋室①','洋室②','洋室③','子供室①','子供室②','主寝室','WIC','WTC','トイレ','洗面室','洗面','ユーティリティ','浴室','ホール','廊下','収納','書斎'];
 function loadRoomOpts(){try{const v=localStorage.getItem('gc_room_opts');return v?JSON.parse(v):DEFAULT_ROOM_OPTS;}catch{return DEFAULT_ROOM_OPTS;}}
-function saveRoomOpts(opts){localStorage.setItem('gc_room_opts',JSON.stringify(opts));}
+function saveRoomOpts(opts){
+  localStorage.setItem('gc_room_opts',JSON.stringify(opts));
+  supa.from('app_settings').upsert({key:'room_opts', value:opts});
+}
 
 // Admin password (default: 1234)
 const ADMIN_PW_KEY = 'gc_admin_pw';
@@ -1028,6 +1078,50 @@ function calcItemTotal(sel) {
 
 // ===== COMPONENTS =====
 
+// ===== LOGIN SCREEN =====
+function LoginScreen() {
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  async function handleLogin(e) {
+    e.preventDefault();
+    setLoading(true); setError('');
+    const {error: err} = await supa.auth.signInWithPassword({email, password});
+    if (err) { setError('メールアドレスまたはパスワードが正しくありません'); setLoading(false); }
+  }
+  return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--navy)'}}>
+      <div style={{background:'#fff',borderRadius:14,padding:44,width:360,boxShadow:'0 8px 40px rgba(0,0,0,.4)'}}>
+        <div style={{textAlign:'center',marginBottom:32}}>
+          <div style={{fontSize:26,fontWeight:800,letterSpacing:3,color:'var(--navy)'}}>
+            <span style={{color:'var(--gold)'}}>ARCHI</span>
+            <span style={{color:'var(--navy)',margin:'0 4px'}}>·</span>
+            <span>STYLE</span>
+          </div>
+          <div style={{fontSize:11,color:'var(--muted)',marginTop:6,letterSpacing:1}}>コーディネートシステム</div>
+        </div>
+        <form onSubmit={handleLogin}>
+          <div className="form-group">
+            <label className="form-label">メールアドレス</label>
+            <input className="form-input" type="email" value={email}
+              onChange={e=>setEmail(e.target.value)} required placeholder="your@email.com" autoFocus/>
+          </div>
+          <div className="form-group">
+            <label className="form-label">パスワード</label>
+            <input className="form-input" type="password" value={password}
+              onChange={e=>setPassword(e.target.value)} required placeholder="パスワードを入力"/>
+          </div>
+          {error && <div style={{color:'var(--red)',fontSize:12,marginBottom:12,padding:'6px 10px',background:'#fde8e8',borderRadius:6}}>{error}</div>}
+          <button type="submit" className="btn-primary" style={{width:'100%',padding:12,fontSize:14,marginTop:4}} disabled={loading}>
+            {loading ? 'ログイン中...' : 'ログイン'}
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function App() {
   const [tab, setTab] = useState('customers');
   const [activeCat, setActiveCat] = useState('all');
@@ -1037,10 +1131,14 @@ function App() {
   const [customerDate, setCustomerDate] = useState(new Date().toISOString().slice(0,10));
 
   // Customer management
-  const [customers, setCustomers] = useState(loadCustomers);
+  const [customers, setCustomers] = useState([]);
   const [activeCustomerId, setActiveCustomerId] = useState(null);
   const [showNewForm, setShowNewForm] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+
+  // Auth
+  const [supaUser, setSupaUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
 
   // Admin & product management
   const [isAdmin, setIsAdmin] = useState(false);
@@ -1055,11 +1153,62 @@ function App() {
 
   const activeCustomer = customers.find(c => c.id === activeCustomerId) || null;
 
+  // Supabase auth init
+  useEffect(() => {
+    supa.auth.getSession().then(({data:{session}}) => {
+      setSupaUser(session?.user || null);
+      if (session?.user) initDataFromSupa();
+      else setAuthLoading(false);
+    });
+    const {data:{subscription}} = supa.auth.onAuthStateChange((_e, session) => {
+      setSupaUser(session?.user || null);
+      if (session?.user) initDataFromSupa();
+      else { setAuthLoading(false); setCustomers([]); }
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function initDataFromSupa() {
+    // Load customers
+    const {data: custRows} = await supa.from('customers').select();
+    if (custRows?.length) {
+      const list = custRows.map(normalizeCustomer);
+      setCustomers(list);
+      localStorage.setItem('gc_customers', JSON.stringify(list));
+    } else {
+      // First-time migration from localStorage
+      const local = loadCustomers();
+      if (local.length) {
+        await supa.from('customers').upsert(local.map(dbCustomer));
+        setCustomers(local);
+      }
+    }
+    // Load product overrides
+    const {data: ov} = await supa.from('prod_overrides').select().eq('id',1).single();
+    if (ov?.data && Object.keys(ov.data).length) {
+      setOverrides(ov.data);
+      localStorage.setItem('gc_prod_overrides', JSON.stringify(ov.data));
+    }
+    // Load custom products
+    const {data: cp} = await supa.from('custom_products').select();
+    if (cp?.length) {
+      const list = cp.map(r => r.data);
+      setCustomProds(list);
+      localStorage.setItem('gc_prod_custom', JSON.stringify(list));
+    }
+    // Load room options
+    const {data: rs} = await supa.from('app_settings').select().eq('key','room_opts').single();
+    if (rs?.value) localStorage.setItem('gc_room_opts', JSON.stringify(rs.value));
+    setAuthLoading(false);
+  }
+
+  // Cart save (localStorage + Supabase)
   useEffect(() => {
     if (!activeCustomerId) return;
     setCustomers(prev => {
       const updated = prev.map(c => c.id === activeCustomerId ? {...c, cart} : c);
       saveCustomers(updated);
+      supa.from('customers').update({cart}).eq('id', activeCustomerId);
       return updated;
     });
   }, [cart]);
@@ -1068,20 +1217,30 @@ function App() {
   const createCustomer = useCallback((data) => {
     const c = { id: newId(), ...data, cart: [], createdAt: new Date().toISOString().slice(0,10) };
     setCustomers(prev => { const u = [...prev, c]; saveCustomers(u); return u; });
+    supa.from('customers').insert(dbCustomer(c));
     setShowNewForm(false);
   }, []);
   const updateCustomer = useCallback((id, data) => {
-    setCustomers(prev => { const u = prev.map(c => c.id===id ? {...c,...data} : c); saveCustomers(u); return u; });
+    setCustomers(prev => {
+      const u = prev.map(c => c.id===id ? {...c,...data} : c);
+      saveCustomers(u);
+      const updated = u.find(c => c.id === id);
+      if (updated) supa.from('customers').upsert(dbCustomer(updated));
+      return u;
+    });
   }, []);
   const deleteCustomer = useCallback((id) => {
     setCustomers(prev => { const u = prev.filter(c => c.id!==id); saveCustomers(u); return u; });
     if (activeCustomerId === id) { setActiveCustomerId(null); setCart([]); }
     setDeleteTarget(null);
+    supa.from('customers').delete().eq('id', id);
   }, [activeCustomerId]);
-  const selectCustomer = useCallback((cust) => {
+  const selectCustomer = useCallback(async (cust) => {
     setActiveCustomerId(cust.id);
     setCart(cust.cart || []);
     setCustomerDate(cust.createdAt || new Date().toISOString().slice(0,10));
+    // Sync per-customer blobs from Supabase → localStorage, then load
+    await syncCustomerBlobsFromSupa(cust.id);
     setSkipCats(loadSkipCats(cust.id));
     setTab('select');
   }, []);
@@ -1199,6 +1358,13 @@ function App() {
     ? activeCustomer.name1 + (activeCustomer.name2 ? ` / ${activeCustomer.name2}` : '')
     : '';
 
+  if (authLoading) return (
+    <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'var(--navy)'}}>
+      <div style={{color:'#fff',fontSize:14,opacity:.7}}>読み込み中...</div>
+    </div>
+  );
+  if (!supaUser) return <LoginScreen/>;
+
   return (
     <div className="app">
       {/* HEADER */}
@@ -1225,6 +1391,8 @@ function App() {
             : <button className="admin-btn" onClick={()=>setShowAdminLogin(true)}>🔑 管理者</button>
           }
           <button className="admin-btn" onClick={()=>setShowSettings(true)}>⚙️ 設定</button>
+          <button className="admin-btn" onClick={()=>supa.auth.signOut()}
+            style={{color:'#e57373',borderColor:'#e57373'}}>🚪 ログアウト</button>
         </div>
       </header>
 
@@ -3077,7 +3245,10 @@ function SpecTabWrapper({cart, activeCustomer, customerDate}) {
 
 // ===== FINANCE PLAN STORAGE =====
 function loadFinanceData(cid){try{const v=localStorage.getItem('gc_finance_'+cid);if(!v)return defaultFinanceData();const saved=JSON.parse(v);const def=defaultFinanceData();return {...def,...saved};}catch{return defaultFinanceData();}}
-function saveFinanceData(cid,d){localStorage.setItem('gc_finance_'+cid,JSON.stringify(d));}
+function saveFinanceData(cid,d){
+  localStorage.setItem('gc_finance_'+cid,JSON.stringify(d));
+  supa.from('customer_blobs').upsert({customer_id:cid, type:'finance', data:d});
+}
 function defaultFinanceData(){
   return {
     specType:'LIFE', tsubo:'', unitPrice:'550000',
