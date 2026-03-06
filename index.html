@@ -198,11 +198,11 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .cust-tab{flex:1;overflow-y:auto;background:var(--bg);display:flex;flex-direction:column}
 .cust-new-btn{padding:7px 16px;background:var(--navy);color:#fff;border:none;border-radius:7px;font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap}
 .cust-new-btn:hover{background:#243447}
-/* Office tabs */
-.cl-office-tabs{display:flex;align-items:center;gap:4px;padding:10px 16px 0;background:#fff;border-bottom:1px solid var(--border);flex-wrap:wrap}
-.cl-office-tab{padding:7px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-1px;border-radius:0;transition:all .15s}
-.cl-office-tab.active{color:var(--navy);border-bottom-color:var(--navy)}
-.cl-office-tab.active-dark{background:var(--navy);color:#fff;border-radius:6px 6px 0 0;border-bottom-color:var(--navy)}
+/* Status tabs */
+.cl-office-tabs{display:flex;align-items:center;gap:0;padding:0 16px 0;background:#fff;border-bottom:2px solid var(--border);flex-wrap:wrap}
+.cl-office-tab{padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:transparent;color:var(--muted);border-bottom:3px solid transparent;margin-bottom:-2px;transition:all .15s;white-space:nowrap}
+.cl-office-tab:hover{color:var(--navy)}
+.cl-office-tab.active-dark{color:var(--navy);border-bottom-color:var(--navy);font-weight:700}
 /* Search + Filters */
 .cl-search-area{background:#fff;padding:10px 16px 8px;border-bottom:1px solid #eee}
 .cl-search{width:100%;padding:8px 14px;border:1px solid var(--border);border-radius:8px;font-size:13px;outline:none;box-sizing:border-box}
@@ -1982,7 +1982,7 @@ function AdminPanel({allProducts, categories, overrides, onSave, onDelete, onRes
 
 // ===== CUSTOMER COMPONENTS =====
 
-const STATUS_OPTIONS = ['見込み','商談中','見積中','建築申込','着工中','引渡済','完了'];
+const STATUS_OPTIONS = ['商談中','設計打合せ中','IC打合せ中','工事中','お引渡し済'];
 const RANK_OPTIONS   = ['Aランク','Bランク','Cランク','Dランク'];
 const MONTH_OPTIONS  = Array.from({length:12},(_,i)=>`${i+1}月`).concat(['未定']);
 const SCORE_KEYS     = [{k:'jin',l:'人'},{k:'mono',l:'物'},{k:'kane',l:'金'},{k:'toki',l:'時'},{k:'teki',l:'敵'}];
@@ -1998,18 +1998,20 @@ function fmtDateTime(d){
   }catch{return '';}
 }
 
+const STATUS_TABS = ['全て', ...STATUS_OPTIONS];
+
 function CustomerListTab({customers, activeCustomerId, onSelect, onUpdate, onDelete, onNew}) {
-  const [search, setSearch]           = useState('');
+  const [search, setSearch]          = useState('');
+  const [tabStatus, setTabStatus]    = useState('全て');
   const [filterOffice, setFilterOffice] = useState('全て');
   const [filterStaff,  setFilterStaff]  = useState('全員');
-  const [filterStatus, setFilterStatus] = useState('全て');
   const [filterRank,   setFilterRank]   = useState('全て');
   const [filterMonth,  setFilterMonth]  = useState('全て');
-  const [editingId, setEditingId]     = useState(null);
+  const [editingId, setEditingId]    = useState(null);
 
   const offices = useMemo(() => {
     const s = new Set(customers.map(c=>c.office).filter(Boolean));
-    return [...Array.from(s).sort()];
+    return ['全て',...Array.from(s).sort()];
   }, [customers]);
 
   const staffList = useMemo(() => {
@@ -2017,9 +2019,10 @@ function CustomerListTab({customers, activeCustomerId, onSelect, onUpdate, onDel
     return ['全員',...Array.from(s).sort()];
   }, [customers]);
 
-  const officeCount = useMemo(() => {
-    const m={};
-    customers.forEach(c=>{ const o=c.office||''; m[o]=(m[o]||0)+1; });
+  // Count per status tab
+  const statusCount = useMemo(() => {
+    const m = {'全て': customers.length};
+    STATUS_OPTIONS.forEach(st => { m[st] = customers.filter(c=>c.status===st).length; });
     return m;
   }, [customers]);
 
@@ -2027,31 +2030,28 @@ function CustomerListTab({customers, activeCustomerId, onSelect, onUpdate, onDel
     const q = search.toLowerCase();
     return [...customers]
       .filter(c => {
+        if(tabStatus!=='全て' && c.status!==tabStatus) return false;
         if(filterOffice!=='全て' && c.office!==filterOffice) return false;
         if(filterStaff!=='全員' && c.coordinator!==filterStaff) return false;
-        if(filterStatus!=='全て' && c.status!==filterStatus) return false;
         if(filterRank!=='全て' && c.rank!==filterRank) return false;
         if(filterMonth!=='全て' && c.prospectMonth!==filterMonth) return false;
         if(q && !c.name1?.toLowerCase().includes(q) && !c.name2?.toLowerCase().includes(q) && !c.coordinator?.toLowerCase().includes(q) && !c.property?.toLowerCase().includes(q)) return false;
         return true;
       })
       .sort((a,b)=>(b.updatedAt||b.createdAt||'').localeCompare(a.updatedAt||a.createdAt||''));
-  }, [customers, search, filterOffice, filterStaff, filterStatus, filterRank, filterMonth]);
+  }, [customers, search, tabStatus, filterOffice, filterStaff, filterRank, filterMonth]);
 
   return (
     <div className="cust-tab">
-      {/* Office tabs */}
+      {/* Status tabs */}
       <div className="cl-office-tabs">
-        <button className={`cl-office-tab${filterOffice==='全て'?' active-dark':''}`} onClick={()=>setFilterOffice('全て')}>
-          全て ({customers.length})
-        </button>
-        {offices.map(o=>(
-          <button key={o} className={`cl-office-tab${filterOffice===o?' active-dark':''}`} onClick={()=>setFilterOffice(o)}>
-            {o} ({officeCount[o]||0})
+        {STATUS_TABS.map(st=>(
+          <button key={st} className={`cl-office-tab${tabStatus===st?' active-dark':''}`} onClick={()=>setTabStatus(st)}>
+            {st} ({statusCount[st]||0})
           </button>
         ))}
         <div style={{flex:1}}/>
-        <button className="cust-new-btn" onClick={onNew}>＋ 新規登録</button>
+        <button className="cust-new-btn" style={{margin:'6px 0'}} onClick={onNew}>＋ 新規登録</button>
       </div>
       {/* Search */}
       <div className="cl-search-area">
@@ -2060,13 +2060,13 @@ function CustomerListTab({customers, activeCustomerId, onSelect, onUpdate, onDel
       {/* Filters */}
       <div className="cl-filters">
         <span className="cl-filter-label">フィルター</span>
+        <span style={{color:'var(--muted)'}}>事務所</span>
+        <select className="cl-filter-sel" value={filterOffice} onChange={e=>setFilterOffice(e.target.value)}>
+          {offices.map(o=><option key={o}>{o}</option>)}
+        </select>
         <span style={{color:'var(--muted)'}}>担当</span>
         <select className="cl-filter-sel" value={filterStaff} onChange={e=>setFilterStaff(e.target.value)}>
           {staffList.map(s=><option key={s}>{s}</option>)}
-        </select>
-        <span style={{color:'var(--muted)'}}>状態</span>
-        <select className="cl-filter-sel" value={filterStatus} onChange={e=>setFilterStatus(e.target.value)}>
-          <option>全て</option>{STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
         </select>
         <span style={{color:'var(--muted)'}}>ランク</span>
         <select className="cl-filter-sel" value={filterRank} onChange={e=>setFilterRank(e.target.value)}>
@@ -2084,10 +2084,10 @@ function CustomerListTab({customers, activeCustomerId, onSelect, onUpdate, onDel
           <div className="cust-empty">
             <div className="icon">👥</div>
             <div style={{fontSize:15,fontWeight:700,marginBottom:6}}>
-              {search||filterOffice!=='全て'||filterStatus!=='全て'||filterRank!=='全て'||filterMonth!=='全て'
+              {search||tabStatus!=='全て'||filterOffice!=='全て'||filterRank!=='全て'||filterMonth!=='全て'
                 ? '該当するお客様が見つかりません' : 'お客様がまだ登録されていません'}
             </div>
-            {!search && filterOffice==='全て' && <div style={{fontSize:12,marginTop:8}}>「＋ 新規登録」からお客様を追加してください</div>}
+            {!search && tabStatus==='全て' && filterOffice==='全て' && <div style={{fontSize:12,marginTop:8}}>「＋ 新規登録」からお客様を追加してください</div>}
           </div>
         ) : filtered.map(c => (
           editingId===c.id
