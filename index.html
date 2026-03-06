@@ -1646,6 +1646,7 @@ function App() {
         <FinancePlanTab
           key={activeCustomer?.id || 'default'}
           activeCustomer={activeCustomer}
+          cart={cart}
         />
       )}
 
@@ -3427,7 +3428,7 @@ function NumInp({value, onChange, placeholder, style, left}) {
 }
 
 // ===== FINANCE PLAN TAB =====
-function FinancePlanTab({activeCustomer}) {
+function FinancePlanTab({activeCustomer, cart}) {
   const custId = activeCustomer?.id || 'default';
   const custName = activeCustomer
     ? activeCustomer.name1 + (activeCustomer.name2 ? ` / ${activeCustomer.name2}` : '') : '';
@@ -3496,10 +3497,23 @@ function FinancePlanTab({activeCustomer}) {
 
   // Calculations
   const tsuboAmt = n(fin.tsubo) * n(fin.unitPrice);  // ① 建物本体工事費
+  const cartOpTotal = React.useMemo(() => {
+    if (!cart || cart.length === 0) return 0;
+    let total = 0;
+    cart.forEach(s => {
+      const q = parseFloat(s.qty);
+      if (s.qty !== '' && !isNaN(q) && q > 0) {
+        const t = calcItemTotal(s);
+        if (t > 0) total += t;
+      }
+    });
+    return total;
+  }, [cart]);
+  const honTaiTotal = tsuboAmt + cartOpTotal;  // ① 小計（坪 × 坪単価 + 商品選択OP）
   const op2Total = (fin.futaiItems||[]).reduce((s,it)=>s+n(it.amt),0);  // ② 付帯工事費用A
   const op3Total = (fin.op3items||[]).reduce((s,it)=>it.sel==='有'?s+n(it.price):s, 0);  // ③ 付帯工事費用B
   const op4Total = (fin.op4items||[]).reduce((s,it)=>it.sel==='有'?s+n(it.price):s, 0);  // ④ 付帯工事費用B
-  const koujiTotal = tsuboAmt + op2Total + op3Total + op4Total;  // 工事費合計
+  const koujiTotal = honTaiTotal + op2Total + op3Total + op4Total;  // 工事費合計
 
   // 借入計画 行更新ヘルパー
   const updateLoanPlan = (idx, key, val) => {
@@ -3574,7 +3588,7 @@ function FinancePlanTab({activeCustomer}) {
   const monthlyTotal = totalMonthlyLoan + n(fin.kanrihi) + n(fin.shuzenhi) + n(fin.koteiShisanzei);
   const curMonthlyTotal = n(fin.curLoan) + n(fin.curKanrihi) + n(fin.curShuzenhi) + n(fin.curKotei);
 
-  // Input helper
+  // Input helper (numbers auto-formatted with commas on blur)
   const Inp = ({fkey, placeholder, right, style, type}) => (
     <input
       className={`fin-inp${right===false?' fin-inp-left':''}`}
@@ -3582,6 +3596,11 @@ function FinancePlanTab({activeCustomer}) {
       value={fin[fkey]||''}
       placeholder={placeholder||''}
       onChange={e=>save(fkey, e.target.value)}
+      onBlur={e => {
+        const v = e.target.value.replace(/,/g,'');
+        const num = parseFloat(v);
+        if (!isNaN(num) && v !== '') save(fkey, num.toLocaleString('ja-JP'));
+      }}
       style={style}
     />
   );
@@ -3660,9 +3679,15 @@ function FinancePlanTab({activeCustomer}) {
                   <td style={{textAlign:'center',fontSize:'7pt',fontWeight:700}}>=</td>
                   <td className="num" style={{fontWeight:700,fontSize:'8pt',color:'#c00'}}>{tsuboAmt ? fmtYen(tsuboAmt) : '—'}</td>
                 </tr>
+                {cartOpTotal > 0 && (
+                  <tr>
+                    <td colSpan={9} style={{textAlign:'right',paddingRight:4,fontSize:'6pt',color:'#888'}}>商品選択 OP合計（自動反映）</td>
+                    <td className="num" style={{color:'#c00',fontSize:'7pt'}}>+{fmtYen(cartOpTotal)}</td>
+                  </tr>
+                )}
                 <tr className="total-row">
                   <td colSpan={9} style={{textAlign:'right',paddingRight:4}}>① 小計（税抜）</td>
-                  <td className="num">{fmtYen(tsuboAmt)}</td>
+                  <td className="num">{fmtYen(honTaiTotal || tsuboAmt)}</td>
                 </tr>
               </tbody>
             </table>
