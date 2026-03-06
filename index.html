@@ -319,7 +319,7 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .spec-empty{color:#aaa;font-style:italic}
 .spec-sign{display:flex;justify-content:flex-end;gap:16px;margin-top:5px}
 .spec-sign-box{border-top:0.5px solid #999;width:110px;text-align:center;padding-top:2px;font-size:5.5pt;color:#888}
-.spec-editable-cell{cursor:text}
+.spec-editable-cell{cursor:text;background:#fffbe6!important}
 .spec-info-tbl th,.spec-info-tbl td{border:1px solid #8899aa!important;padding:2px 4px}
 
 /* SUB TABS */
@@ -342,9 +342,12 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .facade-tbl tr:nth-child(odd) td{background:#fff}
 .facade-tbl .td-no{text-align:center;padding:2px 3px;color:#888;width:7mm;font-size:6pt}
 .facade-tbl .td-label{padding:2px 5px;font-weight:700;color:#1a2332;white-space:nowrap;font-size:6.5pt}
-.facade-cell{display:block;outline:none;padding:2px 4px;min-height:12px;width:100%;cursor:text;box-sizing:border-box;font-size:7pt}
+.facade-cell{display:block;outline:none;padding:2px 4px;min-height:12px;width:100%;cursor:text;box-sizing:border-box;font-size:7pt;background:#fffbe6}
 .floor-setup{display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:40px 20px;gap:20px;min-height:280px}
-@media screen{.facade-cell:focus{background:#eef5ff;box-shadow:inset 0 0 0 1px #3498db}}
+@media screen{
+  .facade-cell:hover{background:#fff3b0}
+  .facade-cell:focus{background:#fff;box-shadow:inset 0 0 0 1.5px #c8a45c}
+}
 @media print{
   .facade-pages-wrap{transform:none!important;margin-bottom:0!important}
   .facade-a3{box-shadow:none;padding:5mm 6mm;width:420mm;page-break-after:always;margin-bottom:0}
@@ -354,10 +357,13 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
   .detail-floor-section{border-top:none}
   .facade-cell{cursor:default}
 }
-.spec-biko{width:52px;min-width:52px;border:0.5px solid #bbb;padding:1.5px 3px;cursor:text;vertical-align:top;font-size:5.5pt;color:#555}
-.denki-add{width:36px;min-width:36px;border:0.5px solid #bbb;padding:1.5px 2px;text-align:center;font-size:5pt;color:var(--blue);font-weight:600}
+.spec-biko{width:52px;min-width:52px;border:0.5px solid #e6c44a;padding:1.5px 3px;cursor:text;vertical-align:top;font-size:5.5pt;color:#555;background:#fffbe6}
+.denki-add{width:36px;min-width:36px;border:0.5px solid #e6c44a;padding:1.5px 2px;text-align:center;font-size:5pt;color:var(--blue);font-weight:600;background:#fffbe6}
 .denki-total{width:44px;min-width:44px;border:0.5px solid #bbb;padding:1.5px 2px;text-align:center;font-size:5pt;font-weight:700;background:#f0f2f5}
-@media screen{.spec-editable-cell:hover,.spec-biko:hover{background:rgba(52,152,219,.05)!important}}
+@media screen{
+  .spec-editable-cell:hover,.spec-biko:hover,.denki-add:hover{background:#fff3b0!important}
+  .spec-editable-cell:focus,.spec-biko:focus,.denki-add:focus{background:#fff!important;outline:1px solid #c8a45c!important}
+}
 
 @media print{
   /* ── レイアウト ── */
@@ -366,7 +372,10 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
   body{background:#fff}
   .proposal{background:#fff}
   .spec-a3{box-shadow:none;padding:4mm 6mm;width:100%}
-  .spec-editable-cell,.spec-biko{cursor:default}
+  .spec-editable-cell,.spec-biko,.denki-add,.facade-cell,
+  .k-inp,.k-ta,.fin-inp,.sched-task-inp-row input{
+    background:#fff!important;border-color:#bbb!important;cursor:default
+  }
   @page{size:A3 landscape;margin:4mm}
 
   /* ── 背景色・テキスト色を強制印刷（ブラウザのデフォルト抑制を解除） ── */
@@ -431,9 +440,9 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .k-field{display:flex;flex-direction:column;padding:6px 10px;border-bottom:1px solid #f0f0f0;border-right:1px solid #f0f0f0}
 .k-grid .k-field:nth-child(2n){border-right:none}
 .k-label{font-size:9px;color:#888;margin-bottom:2px;font-weight:600}
-.k-inp{border:1px solid #d0d0d0;border-radius:4px;padding:4px 6px;font-size:11px;width:100%;background:#fafafa;box-sizing:border-box}
+.k-inp{border:1px solid #e6c44a;border-radius:4px;padding:4px 6px;font-size:11px;width:100%;background:#fffbe6;box-sizing:border-box}
 .k-inp:focus{outline:none;border-color:#c8a84b;background:#fff}
-.k-ta{border:1px solid #d0d0d0;border-radius:4px;padding:4px 6px;font-size:11px;width:100%;background:#fafafa;resize:vertical;min-height:48px;box-sizing:border-box;font-family:inherit}
+.k-ta{border:1px solid #e6c44a;border-radius:4px;padding:4px 6px;font-size:11px;width:100%;background:#fffbe6;resize:vertical;min-height:48px;box-sizing:border-box;font-family:inherit}
 .k-ta:focus{outline:none;border-color:#c8a84b;background:#fff}
 .k-full{grid-column:1/-1}
 .flow-step{background:#fff;border-radius:8px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.08);overflow:hidden}
@@ -505,7 +514,7 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .sched-task-inputs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;font-size:11px;margin-bottom:6px}
 .sched-task-inp-row{display:flex;align-items:center;gap:4px;flex-wrap:wrap}
 .sched-task-inp-row label{font-size:10px;color:#555;white-space:nowrap;min-width:70px}
-.sched-task-inp-row input{width:90px;padding:2px 4px;border:1px solid #ccc;border-radius:3px;font-size:10px}
+.sched-task-inp-row input{width:90px;padding:2px 4px;border:1px solid #e6c44a;border-radius:3px;font-size:10px;background:#fffbe6}
 
 /* Print */
 @media print {
@@ -539,8 +548,8 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .fin-tbl .total-row td{background:#f5f0e8;font-weight:700}
 .fin-tbl .subtotal-row td{background:#eef5ee;font-weight:700}
 .fin-tbl .grand-total td{background:#1a2332;color:#fff;font-weight:700}
-.fin-tbl .fin-inp{width:100%;border:none;background:transparent;font-size:6.5pt;padding:0 2px;text-align:right;font-family:monospace;color:#000}
-.fin-tbl .fin-inp:focus{background:#fffff0;outline:1px solid #2471d4}
+.fin-tbl .fin-inp{width:100%;border:none;background:#fffbe6;font-size:6.5pt;padding:0 2px;text-align:right;font-family:monospace;color:#000}
+.fin-tbl .fin-inp:focus{background:#fff;outline:1px solid #c8a45c}
 .fin-tbl .fin-inp-left{text-align:left}
 .fin-tbl select.fin-inp{text-align:left}
 /* Two-column layout */
