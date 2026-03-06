@@ -575,6 +575,33 @@ html,body{height:100%;font-family:'Segoe UI','Hiragino Sans','Meiryo',sans-serif
 .settings-storage-bar{width:100%;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin:6px 0 10px}
 .settings-storage-fill{height:100%;transition:width .3s}
 .settings-btn-row{display:flex;gap:8px;margin-top:16px}
+/* PRODUCT LIST VIEW */
+.prod-list{margin-bottom:20px}
+.prod-list-skipped{opacity:.4;pointer-events:none}
+.prod-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:#fff;border:1px solid var(--border);border-radius:6px;margin-bottom:3px;cursor:pointer;transition:all .15s}
+.prod-row:hover{border-color:#bbc3cf;background:#fafbfc}
+.prod-row.selected{border-color:var(--blue);background:#f0f5ff}
+.pr-info{flex:1;min-width:0}
+.pr-name{font-size:12px;font-weight:700;color:var(--navy)}
+.pr-note-inline{font-size:10px;color:var(--muted);border-left:2px solid var(--gold);padding-left:5px;margin-top:1px}
+.pr-maker{font-size:11px;color:var(--muted);white-space:nowrap;flex-shrink:0;min-width:80px;text-align:right}
+.pr-price{font-size:11px;font-weight:700;color:var(--navy);white-space:nowrap;flex-shrink:0;min-width:130px;text-align:right}
+.add-btn-sm{width:24px;height:24px;border-radius:50%;background:var(--blue);color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;line-height:1;flex-shrink:0;transition:all .15s}
+.add-btn-sm:hover{background:#2980b9;transform:scale(1.1)}
+.add-btn-sm.in-cart{background:var(--green)}
+.add-btn-sm:disabled{background:#ccc;cursor:default;transform:none}
+/* SKIP BUTTON */
+.skip-btn{padding:3px 10px;border-radius:10px;border:1px solid var(--border);background:#fff;font-size:10px;font-weight:700;cursor:pointer;color:var(--muted);transition:all .15s;white-space:nowrap;flex-shrink:0}
+.skip-btn:hover{border-color:var(--orange);color:var(--orange)}
+.skip-btn.skipped{background:#fff3e0;border-color:var(--orange);color:var(--orange)}
+/* SIDEBAR STATUS BADGE */
+.sel-badge-done{font-size:10px;font-weight:700;color:var(--green);background:#e6f7ee;padding:1px 6px;border-radius:8px;white-space:nowrap}
+.sel-badge-skip{font-size:10px;font-weight:700;color:var(--orange);background:#fff3e0;padding:1px 6px;border-radius:8px;white-space:nowrap}
+/* SIDEBAR PROGRESS */
+.sel-prog-wrap{padding:10px 14px;background:#1a2332;border-bottom:1px solid rgba(255,255,255,.1)}
+.sel-prog-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px}
+.sel-prog-track{height:5px;background:rgba(255,255,255,.15);border-radius:3px;overflow:hidden}
+.sel-prog-fill{height:100%;border-radius:3px;transition:width .4s ease}
 </style>
 </head>
 <body>
@@ -656,6 +683,10 @@ function deleteCustomerAllData(custId) {
   }
   keys.forEach(k => localStorage.removeItem(k));
 }
+
+// Skip-cats (選択しない) per customer
+function loadSkipCats(cid) { try { return JSON.parse(localStorage.getItem('gc_skip_'+cid)||'{}'); } catch { return {}; } }
+function saveSkipCats(cid, obj) { localStorage.setItem('gc_skip_'+cid, JSON.stringify(obj)); }
 
 // Spec sheet edits (per customer)
 function loadSpecEdits(custId) {
@@ -1016,6 +1047,7 @@ function App() {
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
+  const [skipCats, setSkipCats] = useState({});
   const [overrides, setOverrides] = useState(loadOverrides);
   const [customProds, setCustomProds] = useState(loadCustomProds);
 
@@ -1050,8 +1082,16 @@ function App() {
     setActiveCustomerId(cust.id);
     setCart(cust.cart || []);
     setCustomerDate(cust.createdAt || new Date().toISOString().slice(0,10));
+    setSkipCats(loadSkipCats(cust.id));
     setTab('select');
   }, []);
+  const toggleSkip = useCallback((catId) => {
+    setSkipCats(prev => {
+      const next = {...prev, [catId]: !prev[catId]};
+      if (activeCustomerId) saveSkipCats(activeCustomerId, next);
+      return next;
+    });
+  }, [activeCustomerId]);
 
   // Admin product CRUD
   const adminSaveProduct = useCallback((prod) => {
@@ -1146,6 +1186,14 @@ function App() {
     allProducts.forEach(p => { c[p.cat] = (c[p.cat]||0) + 1; });
     return c;
   }, [allProducts]);
+
+  const realCats = useMemo(() =>
+    CATEGORIES.filter(c => c.group !== 'all' && c.group !== 'header-facade' && c.group !== 'header-detail'),
+  []);
+  const catsDone = useMemo(() =>
+    realCats.filter(c => skipCats[c.id] || cart.some(s => s.product.cat === c.id)),
+  [realCats, skipCats, cart]);
+  const allDone = catsDone.length === realCats.length;
 
   const custName = activeCustomer
     ? activeCustomer.name1 + (activeCustomer.name2 ? ` / ${activeCustomer.name2}` : '')
@@ -1256,19 +1304,36 @@ function App() {
       {/* SELECT TAB */}
       {tab === 'select' && (
         <div className="body">
-          {/* SIDEBAR */}
+          {/* CATEGORY SIDEBAR */}
           <nav className="sidebar no-print">
+            {/* 進捗サマリー */}
+            <div className="sel-prog-wrap">
+              <div className="sel-prog-row">
+                <span style={{color:'#8899aa'}}>打ち合わせ進捗</span>
+                <span style={{color: allDone ? '#6ee7b7' : '#fff', fontWeight:700}}>{catsDone.length}/{realCats.length}</span>
+              </div>
+              <div className="sel-prog-track">
+                <div className="sel-prog-fill" style={{width:(catsDone.length/realCats.length*100)+'%', background: allDone ? '#38a169' : 'var(--gold)'}}/>
+              </div>
+            </div>
             <div className="sidebar-group">
               <div className={`sidebar-item${activeCat==='all'?' active':''}`} onClick={()=>setActiveCat('all')}>
                 すべて表示 <span className="ct">{allProducts.length}</span>
               </div>
             </div>
             {CATEGORIES.filter(c=>c.group!=='all').map(c=>{
-              if(c.group==='header-facade') return (<div key={c.id} className="sidebar-grouplabel facade">{c.name}</div>);
-              if(c.group==='header-detail') return (<div key={c.id} className="sidebar-grouplabel detail">{c.name}</div>);
+              if(c.group==='header-facade') return <div key={c.id} className="sidebar-grouplabel facade">{c.name}</div>;
+              if(c.group==='header-detail') return <div key={c.id} className="sidebar-grouplabel detail">{c.name}</div>;
+              const hasProduct = cart.some(s => s.product.cat === c.id);
+              const skipped = skipCats[c.id];
+              const done = hasProduct || skipped;
               return (
                 <div key={c.id} className={`sidebar-item${activeCat===c.id?' active':''}`} onClick={()=>setActiveCat(c.id)}>
-                  {c.name} <span className="ct">{catCounts[c.id]||0}</span>
+                  <span style={{flex:1,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.name}</span>
+                  {done
+                    ? <span className={skipped ? 'sel-badge-skip' : 'sel-badge-done'}>{skipped ? 'SKIP' : '✓'}</span>
+                    : <span className="ct">{catCounts[c.id]||0}</span>
+                  }
                 </div>
               );
             })}
@@ -1276,6 +1341,24 @@ function App() {
 
           {/* MAIN CONTENT */}
           <div className="main">
+            {/* 進捗バー */}
+            <div className="no-print" style={{padding:'7px 16px',background:'#fff',borderBottom:'1px solid var(--border)',display:'flex',alignItems:'center',gap:12,flexShrink:0}}>
+              <div style={{flex:1}}>
+                <div style={{display:'flex',justifyContent:'space-between',fontSize:11,marginBottom:3}}>
+                  <span style={{color:'var(--muted)'}}>仕様打ち合わせ進捗</span>
+                  <span style={{fontWeight:700,color: allDone ? 'var(--green)' : 'var(--text)'}}>
+                    {catsDone.length} / {realCats.length} カテゴリ完了
+                  </span>
+                </div>
+                <div style={{height:5,background:'#e2e8f0',borderRadius:3,overflow:'hidden'}}>
+                  <div style={{height:'100%',width:(catsDone.length/realCats.length*100)+'%',
+                    background: allDone ? 'var(--green)' : 'var(--blue)',borderRadius:3,transition:'width .4s'}}/>
+                </div>
+              </div>
+              {allDone && <span style={{color:'var(--green)',fontWeight:700,fontSize:12,whiteSpace:'nowrap'}}>🎉 打ち合わせ完了！</span>}
+            </div>
+
+            {/* 検索・フィルター */}
             <div className="search-bar no-print">
               <input className="search-input" placeholder="🔍 商品名・メーカーで検索..." value={search} onChange={e=>setSearch(e.target.value)}/>
               <div className="filter-tags">
@@ -1284,6 +1367,8 @@ function App() {
                 ))}
               </div>
             </div>
+
+            {/* 商品リスト */}
             <div className="products">
               {Object.keys(grouped).length === 0 && (
                 <div style={{textAlign:'center',padding:'60px',color:'var(--muted)'}}>
@@ -1291,20 +1376,39 @@ function App() {
                   <div>該当する商品が見つかりませんでした</div>
                 </div>
               )}
-              {Object.entries(grouped).map(([catKey, {catName, group, items}]) => (
-                <div key={catKey}>
-                  <div className="cat-title">
-                    <span>{catName}</span>
-                    <span className={`group-badge ${group}`}>{group==='facade'?'外部':'内部'}</span>
-                    <span style={{marginLeft:'auto',fontSize:11,opacity:.7}}>{items.length}件</span>
+              {Object.entries(grouped).map(([catKey, {catName, group, items}]) => {
+                const hasProduct = cart.some(s => s.product.cat === catKey);
+                const skipped = skipCats[catKey];
+                const done = hasProduct || skipped;
+                return (
+                  <div key={catKey}>
+                    <div className="cat-title">
+                      <span>{catName}</span>
+                      <span className={`group-badge ${group}`}>{group==='facade'?'外部':'内部'}</span>
+                      <span style={{marginLeft:6,fontSize:11,opacity:.7}}>{items.length}件</span>
+                      <div style={{marginLeft:'auto',display:'flex',alignItems:'center',gap:6}}>
+                        {done && (
+                          <span style={{fontSize:10,fontWeight:700,
+                            color: skipped ? '#e67e22' : '#6ee7b7',
+                            background: skipped ? 'rgba(230,126,34,.2)' : 'rgba(39,174,96,.25)',
+                            padding:'1px 8px',borderRadius:8}}>
+                            {skipped ? 'SKIP' : '✓ 選択済'}
+                          </span>
+                        )}
+                        <button className={`skip-btn${skipped?' skipped':''}`}
+                          onClick={e=>{e.stopPropagation();toggleSkip(catKey);}}>
+                          {skipped ? '✕ スキップ解除' : '選択しない'}
+                        </button>
+                      </div>
+                    </div>
+                    <div className={`prod-list${skipped?' prod-list-skipped':''}`}>
+                      {items.map(p => (
+                        <ProductRow key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart} disabled={!!skipped}/>
+                      ))}
+                    </div>
                   </div>
-                  <div className="product-grid">
-                    {items.map(p => (
-                      <ProductCard key={p.id} product={p} inCart={cartIds.has(p.id)} onAdd={addToCart}/>
-                    ))}
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 
@@ -1317,6 +1421,9 @@ function App() {
             onClear={()=>setCart([])}
             onProposal={()=>setTab('proposal')}
             onSpec={()=>setTab('spec')}
+            allDone={allDone}
+            catsDone={catsDone.length}
+            totalCats={realCats.length}
           />
         </div>
       )}
@@ -1845,7 +1952,31 @@ function ProductCard({product, inCart, onAdd}) {
   );
 }
 
-function CartPanel({cart, totals, onRemove, onUpdate, onClear, onProposal, onSpec}) {
+function ProductRow({product, inCart, onAdd, disabled}) {
+  const p = product;
+  return (
+    <div className={`prod-row${inCart?' selected':''}${disabled?' prod-list-skipped':''}`}
+      onClick={()=>{ if(!disabled && !inCart) onAdd(p); }}>
+      <button className={`add-btn-sm${inCart?' in-cart':''}`} disabled={disabled}
+        onClick={e=>{e.stopPropagation();if(!disabled)onAdd(p);}} title={inCart?'選択済み':'追加'}>
+        {inCart ? '✓' : '+'}
+      </button>
+      <div style={{display:'flex',gap:3,flexShrink:0}}>
+        {p.tags.map(t=>(
+          <span key={t} className={`tag ${t}`}>{t==='std'?'標準':t==='op'?'OP':t==='hit'?'HIT!':t}</span>
+        ))}
+      </div>
+      <div className="pr-info">
+        <div className="pr-name">{p.name}</div>
+        {p.note && <div className="pr-note-inline">{p.note}</div>}
+      </div>
+      <div className="pr-maker">{p.maker}</div>
+      <div className="pr-price">{p.priceText}</div>
+    </div>
+  );
+}
+
+function CartPanel({cart, totals, onRemove, onUpdate, onClear, onProposal, onSpec, allDone, catsDone, totalCats}) {
   return (
     <aside className="cart no-print">
       <div className="cart-header">
@@ -1884,6 +2015,22 @@ function CartPanel({cart, totals, onRemove, onUpdate, onClear, onProposal, onSpe
             <div style={{fontSize:10,color:'var(--muted)',marginTop:4}}>※標準品・見積品は含まず</div>
           </>
         )}
+        {/* 打ち合わせ完了ステータス */}
+        <div style={{marginBottom:8,padding:'8px 10px',borderRadius:7,
+          background: allDone ? '#e6f7ee' : '#f8f9fb',
+          border: `1px solid ${allDone ? 'var(--green)' : 'var(--border)'}`,
+          fontSize:11,textAlign:'center'}}>
+          {allDone
+            ? <span style={{color:'var(--green)',fontWeight:700}}>🎉 仕様打ち合わせ完了！</span>
+            : <span style={{color:'var(--muted)'}}>
+                残り <b style={{color:'var(--navy)'}}>{totalCats - catsDone}</b> カテゴリ未完了
+              </span>
+          }
+          <div style={{height:3,background:'#e2e8f0',borderRadius:2,marginTop:5,overflow:'hidden'}}>
+            <div style={{height:'100%',width:(totalCats > 0 ? catsDone/totalCats*100 : 0)+'%',
+              background: allDone ? 'var(--green)' : 'var(--blue)',transition:'width .4s'}}/>
+          </div>
+        </div>
         <button className="proposal-btn" onClick={onProposal}>📄 オプション金額リストを作成</button>
         <button className="proposal-btn" onClick={onSpec} style={{marginTop:4,background:'#2471d4'}}>📝 仕様書を作成</button>
         {cart.length > 0 && (
